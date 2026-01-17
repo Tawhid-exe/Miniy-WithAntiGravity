@@ -1,0 +1,102 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { products } from '../data/products';
+import { useCart } from '../context/CartContext';
+import { ShoppingCart, Sparkles } from 'lucide-react';
+
+function Products() {
+    const navigate = useNavigate();
+    const { addToCart } = useCart();
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [addedItems, setAddedItems] = useState(new Set());
+
+    const categories = ['All', ...new Set(products.map(p => p.category))];
+    const filteredProducts = selectedCategory === 'All' ? products : products.filter(p => p.category === selectedCategory);
+
+    const handleAddToCart = (e, product) => {
+        e.stopPropagation();
+        addToCart(product);
+        setAddedItems(prev => new Set([...prev, product.id]));
+        setTimeout(() => {
+            setAddedItems(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(product.id);
+                return newSet;
+            });
+        }, 1500);
+    };
+
+    return (
+        <div className="min-h-screen bg-light-bg dark:bg-dark py-12 px-4 overflow-hidden transition-colors duration-300">
+            <div className="max-w-7xl mx-auto">
+                <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} className="mb-12 text-center">
+                    <h1 className="text-6xl font-bold mb-4 text-gradient">Our Products</h1>
+                    <p className="text-light-text-muted dark:text-slate-400 text-lg flex items-center justify-center gap-2">
+                        <Sparkles className="text-light-primary dark:text-primary" size={20} />
+                        Discover amazing products with incredible prices
+                    </p>
+                </motion.div>
+
+                <div className="flex flex-wrap gap-3 justify-center mb-12">
+                    {categories.map((category) => (
+                        <motion.button
+                            key={category}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setSelectedCategory(category)}
+                            style={selectedCategory === category ? { color: '#ffffff' } : {}}
+                            className={`px-6 py-3 rounded-full transition-all font-semibold ${selectedCategory === category
+                                ? 'bg-gradient-to-r from-light-primary to-light-secondary dark:from-primary dark:to-secondary shadow-lg !text-white'
+                                : 'glass text-light-text dark:text-slate-300'
+                                }`}
+                        >
+                            {category}
+                        </motion.button>
+                    ))}
+                </div>
+
+                <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {filteredProducts.map((product) => {
+                        const isAdded = addedItems.has(product.id);
+                        return (
+                            <motion.div
+                                key={product.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                whileHover={{ y: -8 }}
+                                onClick={() => navigate(`/product/${product.id}`)}
+                                className="glass-card rounded-2xl overflow-hidden cursor-pointer group"
+                            >
+                                <div className="relative h-64 overflow-hidden bg-gray-100 dark:bg-slate-800">
+                                    <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                </div>
+                                <div className="p-6">
+                                    <div className="text-sm text-light-primary dark:text-primary mb-2 font-semibold">{product.category}</div>
+                                    <h3 className="text-xl font-semibold text-light-text dark:text-light mb-2 line-clamp-1">{product.name}</h3>
+                                    <p className="text-light-text-muted dark:text-slate-400 text-sm mb-4 line-clamp-2">{product.description}</p>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-2xl font-bold text-gradient">${product.price}</span>
+                                        <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={(e) => handleAddToCart(e, product)}
+                                            style={{ color: '#ffffff' }}
+                                            className={`p-3 rounded-full transition-all ${isAdded ? 'bg-green-600 text-white' : 'bg-light-primary dark:bg-primary text-white hover:shadow-lg'
+                                                }`}
+                                        >
+                                            <ShoppingCart size={20} />
+                                        </motion.button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+                </motion.div>
+            </div>
+        </div>
+    );
+}
+
+export default Products;

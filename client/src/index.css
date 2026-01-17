@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  /* Optimized transitions - avoid wildcard * selector */
+  body {
+    @apply transition-colors duration-300;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased;
+  }
+
+  /* Dark mode (default) */
+  .dark html,
+  .dark body {
+    @apply bg-dark text-light;
+  }
+
+  /* Light mode */
+  .light html,
+  .light body {
+    @apply bg-light-bg text-light-text;
+  }
+}
+
+@layer utilities {
+
+  /* Dark mode glass effects */
+  .dark .glass {
+    @apply bg-gradient-to-br from-black/80 via-black/70 to-purple-950/70 backdrop-blur-md shadow-lg md:backdrop-blur-xl;
+  }
+
+  .dark .glass-card {
+    @apply bg-black/20 backdrop-blur-sm border border-white/5 shadow-lg hover:bg-black/30 hover:border-white/10 transition-all duration-500 md:backdrop-blur-md;
+  }
+
+  /* Light mode glass effects */
+  .light .glass {
+    @apply bg-gradient-to-br from-white/70 via-purple-50/60 to-purple-100/70 backdrop-blur-md shadow-xl md:backdrop-blur-lg md:shadow-2xl;
+  }
+
+  .light .glass-card {
+    @apply bg-white/90 backdrop-blur-md border border-slate-200 shadow-lg hover:shadow-xl hover:border-light-primary/30 transition-all duration-500;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  }
+
+  .dark .text-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary;
+  }
+
+  .light .text-gradient {
+    @apply bg-gradient-to-r from-light-primary to-light-secondary;
+  }
+
+  .hover-lift {
+    @apply hover:-translate-y-2 hover:shadow-2xl transition-all duration-300;
+  }
+
+  .dark .hover-lift {
+    @apply hover:shadow-primary/20;
+  }
+
+  .light .hover-lift {
+    @apply hover:shadow-light-primary/20;
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+/* Custom Scrollbar - Dark */
+.dark ::-webkit-scrollbar-track {
+  @apply bg-dark;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 rounded-full hover:bg-slate-600;
+}
+
+/* Custom Scrollbar - Light */
+.light ::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded-full hover:bg-gray-500;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  transition: background-color 0.2s;
+}
