@@ -1,11 +1,11 @@
-require('dotenv').config();
+const require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
+const xss = require('xss');
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -31,14 +31,7 @@ app.use((req, res, next) => {
     // We strictly sanitize the properties of req.query instead.
     if (req.query) {
         const sanitizedQuery = mongoSanitize.sanitize(req.query);
-        // We can't assign req.query = sanitizedQuery, so we copy props back
-        // But req.query might be read-only proxy in some setups, however in Express 5
-        // it is widely reported that we can modify properties, just not the object reference.
-        // Actually, Express 5 uses a getter that returns the query parser result.
-        // If we want to "replace" it, we might just have to modify it in place.
-
         // Strategy: Clear existing keys and copy sanitized ones.
-        // Note: This relies on req.query being mutable object returned by the getter.
         const keys = Object.keys(req.query);
         for (const key of keys) {
             delete req.query[key];
@@ -47,7 +40,33 @@ app.use((req, res, next) => {
     }
     next();
 });
-app.use(xss()); // Data sanitization against XSS
+
+// Data sanitization against XSS
+app.use((req, res, next) => {
+    // Helper function to sanitize object values
+    const sanitizeObject = (obj) => {
+        if (!obj) return obj;
+        for (const key in obj) {
+            if (typeof obj[key] === 'string') {
+                obj[key] = xss(obj[key]);
+            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                sanitizeObject(obj[key]);
+            }
+        }
+        return obj;
+    };
+
+    if (req.body) req.body = sanitizeObject(req.body);
+    if (req.params) req.params = sanitizeObject(req.params);
+
+    // Sanitize query safely for Express 5
+    if (req.query) {
+        const query = req.query;
+        sanitizeObject(query);
+    }
+
+    next();
+});
 
 // Rate Limiting
 const limiter = rateLimit({
