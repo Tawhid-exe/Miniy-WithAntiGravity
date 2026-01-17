@@ -22,7 +22,31 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10kb' })); // Body limit
 app.use(cookieParser());
-app.use(mongoSanitize()); // Data sanitization against NoSQL query injection
+// Data sanitization against NoSQL query injection
+app.use((req, res, next) => {
+    req.body = mongoSanitize.sanitize(req.body);
+    req.params = mongoSanitize.sanitize(req.params);
+
+    // In Express 5, req.query is a getter and cannot be reassigned directly.
+    // We strictly sanitize the properties of req.query instead.
+    if (req.query) {
+        const sanitizedQuery = mongoSanitize.sanitize(req.query);
+        // We can't assign req.query = sanitizedQuery, so we copy props back
+        // But req.query might be read-only proxy in some setups, however in Express 5
+        // it is widely reported that we can modify properties, just not the object reference.
+        // Actually, Express 5 uses a getter that returns the query parser result.
+        // If we want to "replace" it, we might just have to modify it in place.
+
+        // Strategy: Clear existing keys and copy sanitized ones.
+        // Note: This relies on req.query being mutable object returned by the getter.
+        const keys = Object.keys(req.query);
+        for (const key of keys) {
+            delete req.query[key];
+        }
+        Object.assign(req.query, sanitizedQuery);
+    }
+    next();
+});
 app.use(xss()); // Data sanitization against XSS
 
 // Rate Limiting
