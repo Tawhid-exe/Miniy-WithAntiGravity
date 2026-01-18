@@ -3,26 +3,34 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageTransition from '../components/PageTransition';
+import { Eye, EyeOff } from 'lucide-react';
 
 const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const { login, register, isAuthenticated, error, clearErrors } = useAuth();
     const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     });
 
-    const { name, email, password } = formData;
+    const { name, email, password, confirmPassword } = formData;
+    const [localError, setLocalError] = useState('');
 
     useEffect(() => {
         if (isAuthenticated) {
             navigate('/');
         }
         if (error) {
-            setTimeout(() => clearErrors(), 3000);
+            setLocalError(error);
+            setTimeout(() => {
+                clearErrors();
+                setLocalError('');
+            }, 3000);
         }
     }, [isAuthenticated, error, navigate, clearErrors]);
 
@@ -30,6 +38,12 @@ const AuthPage = () => {
 
     const onSubmit = async e => {
         e.preventDefault();
+        if (!isLogin && password !== confirmPassword) {
+            setLocalError("Passwords do not match");
+            setTimeout(() => setLocalError(''), 3000);
+            return;
+        }
+
         try {
             if (isLogin) {
                 await login(email, password);
@@ -125,23 +139,58 @@ const AuthPage = () => {
                                     <input
                                         id="password"
                                         name="password"
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         required
                                         className={inputClasses}
                                         placeholder="Password"
                                         value={password}
                                         onChange={onChange}
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-purple-600 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
                                 </div>
                             </div>
 
-                            {error && (
+                            <AnimatePresence initial={false}>
+                                {!isLogin && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                        animate={{ opacity: 1, height: "auto", marginTop: 20 }}
+                                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="relative">
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                            </span>
+                                            <input
+                                                id="confirmPassword"
+                                                name="confirmPassword"
+                                                type={showPassword ? "text" : "password"}
+                                                required={!isLogin}
+                                                className={inputClasses}
+                                                placeholder="Confirm Password"
+                                                value={confirmPassword}
+                                                onChange={onChange}
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {localError && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className="p-3 rounded-lg bg-red-50 text-red-500 text-sm text-center border border-red-100"
                                 >
-                                    {error}
+                                    {localError}
                                 </motion.div>
                             )}
 
