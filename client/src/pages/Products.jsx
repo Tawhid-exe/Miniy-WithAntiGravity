@@ -18,7 +18,7 @@ function Products() {
         // Simulate loading delay for skeleton demo
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 1500);
+        }, 500);
         return () => clearTimeout(timer);
     }, []);
 
@@ -76,7 +76,7 @@ function Products() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.3 }}
+                            transition={{ duration: 0.2 }}
                         >
                             {loading ? (
                                 // Skeleton Loading State
@@ -104,15 +104,15 @@ function Products() {
                                                 scale: 1,
                                                 y: 0,
                                                 transition: {
-                                                    duration: 0.5,
-                                                    delay: index * 0.05,
+                                                    duration: 0.3,
+                                                    delay: index * 0.03,
                                                     ease: [0.25, 0.4, 0.25, 1]
                                                 }
                                             }}
                                             exit={{
                                                 opacity: 0,
                                                 scale: 0.8,
-                                                transition: { duration: 0.3 }
+                                                transition: { duration: 0.2 }
                                             }}
                                             whileHover={{ y: -8 }}
                                             onClick={() => navigate(`/product/${product.id}`)}

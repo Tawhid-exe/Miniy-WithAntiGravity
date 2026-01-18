@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, Zap, Shield, Truck } from 'lucide-react';
@@ -6,7 +7,7 @@ const container = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
-        transition: { staggerChildren: 0.15 }
+        transition: { staggerChildren: 0.1 }
     }
 };
 
@@ -16,9 +17,18 @@ const item = {
 };
 
 import PageTransition from '../components/PageTransition';
+import { ProductSkeleton } from '../components/Skeleton';
 
 function Home() {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, []);
 
     return (
         <PageTransition>
@@ -45,7 +55,7 @@ function Home() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1 }}
+                        transition={{ duration: 0.5 }}
                         className="glass p-12 rounded-3xl z-10 max-w-2xl w-full mx-4"
                     >
                         <motion.div variants={container} initial="hidden" animate="show">

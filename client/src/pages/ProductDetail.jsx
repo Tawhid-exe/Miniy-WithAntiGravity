@@ -3,15 +3,24 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { products } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { ArrowLeft, ShoppingCart, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import PageTransition from '../components/PageTransition';
+import { ProductSkeleton } from '../components/Skeleton';
 
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
     const [added, setAdded] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, []);
 
     const product = products.find(p => p.id === parseInt(id));
 
@@ -71,7 +80,7 @@ function ProductDetail() {
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.2 }}
+                            transition={{ delay: 0.1 }}
                             className="flex flex-col justify-center"
                         >
                             <div className="text-light-primary dark:text-primary text-sm font-semibold mb-2">
@@ -105,7 +114,7 @@ function ProductDetail() {
                                         key={feature}
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.4 + index * 0.1 }}
+                                        transition={{ delay: 0.2 + index * 0.05 }}
                                         className="flex items-center gap-3 text-light-text dark:text-slate-300"
                                     >
                                         <div className="bg-light-primary/20 dark:bg-primary/20 p-1 rounded-full">
