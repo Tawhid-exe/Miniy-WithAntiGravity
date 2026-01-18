@@ -29,8 +29,15 @@ function Navbar() {
             <div className="max-w-7xl mx-auto px-4 py-4">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <Link to="/" className="text-2xl font-bold text-gradient">
-                        FutureShop
+                    <Link to="/" className="flex items-center gap-2">
+                        <img
+                            src="/logo.jpeg"
+                            alt="FutureShop"
+                            className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border-2 border-primary/50"
+                        />
+                        <span className="text-xl md:text-2xl font-bold text-gradient hidden sm:block">
+                            FutureShop
+                        </span>
                     </Link>
 
                     {/* Navigation Links + Theme Toggle */}

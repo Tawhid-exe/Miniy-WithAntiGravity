@@ -1,5 +1,6 @@
 import { AuthProvider } from './context/AuthContext';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { CartProvider } from './context/CartContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
@@ -20,25 +21,10 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <Router>
-            <div className="min-h-screen transition-colors duration-300">
+            <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-950">
               <Navbar />
               <div className="pt-20">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/cart" element={<Cart />} />
-
-                  {/* Admin Routes */}
-                  <Route path="/admin" element={<AdminLayout />}>
-                    <Route path="dashboard" element={<AdminDashboard />} />
-                    <Route path="products" element={<div className="p-10">Products Manager (Coming Soon)</div>} />
-                    <Route path="orders" element={<AdminOrders />} />
-                    <Route path="customers" element={<CustomerDirectory />} />
-                    <Route path="inventory" element={<InventoryAudit />} />
-                  </Route>
-                </Routes>
+                <AnimatedRoutes />
               </div>
             </div>
           </Router>
@@ -48,5 +34,29 @@ function App() {
   );
 }
 
-export default App;
+function AnimatedRoutes() {
+  const location = useLocation();
 
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Home />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+
+        {/* Admin Routes - keeping them simple for now */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="products" element={<div className="p-10">Products Manager (Coming Soon)</div>} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="customers" element={<CustomerDirectory />} />
+          <Route path="inventory" element={<InventoryAudit />} />
+        </Route>
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
+export default App;

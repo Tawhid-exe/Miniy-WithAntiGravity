@@ -86,10 +86,27 @@ app.use('/api/v1', user);
 app.use('/api/v1', admin);
 
 
-// Routes
-app.get('/', (req, res) => {
-    res.send('API is running...');
-});
+const path = require('path');
+
+// ... (keep existing API routes)
+
+app.use('/api/v1', product);
+app.use('/api/v1', user);
+app.use('/api/v1', admin);
+
+
+// Serve Static Assets in Production
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+    });
+} else {
+    app.get('/', (req, res) => {
+        res.send('API is running... (Dev Mode)');
+    });
+}
 
 // Database Connection
 const connectDB = async () => {
