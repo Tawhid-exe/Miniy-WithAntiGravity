@@ -77,18 +77,11 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Route Imports
+// Route Imports
 const product = require('./routes/productRoute');
 const user = require('./routes/authRoute');
 const admin = require('./routes/adminRoute');
-
-app.use('/api/v1', product);
-app.use('/api/v1', user);
-app.use('/api/v1', admin);
-
-
 const path = require('path');
-
-// ... (keep existing API routes)
 
 app.use('/api/v1', product);
 app.use('/api/v1', user);
@@ -99,7 +92,7 @@ app.use('/api/v1', admin);
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
 
-    app.get('*', (req, res) => {
+    app.get(/.*/, (req, res) => {
         res.sendFile(path.join(__dirname, '../client/dist/index.html'));
     });
 } else {
