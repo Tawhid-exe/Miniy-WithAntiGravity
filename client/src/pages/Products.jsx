@@ -68,7 +68,7 @@ function Products() {
                         ))}
                     </div>
 
-                    <AnimatePresence mode="popLayout">
+                    <AnimatePresence mode="wait">
                         <motion.div
                             key={selectedCategory}
                             layout
@@ -76,7 +76,7 @@ function Products() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.15 }}
+                            transition={{ duration: 0.2 }}
                         >
                             {loading ? (
                                 // Skeleton Loading State
@@ -98,21 +98,21 @@ function Products() {
                                         <motion.div
                                             key={product.id}
                                             layout
-                                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
                                             animate={{
                                                 opacity: 1,
                                                 scale: 1,
                                                 y: 0,
                                                 transition: {
-                                                    duration: 0.2,
-                                                    delay: index * 0.015,
-                                                    ease: [0.23, 1, 0.32, 1]
+                                                    duration: 0.3,
+                                                    delay: index * 0.03,
+                                                    ease: [0.25, 0.4, 0.25, 1]
                                                 }
                                             }}
                                             exit={{
                                                 opacity: 0,
-                                                scale: 0.9,
-                                                transition: { duration: 0.1 }
+                                                scale: 0.8,
+                                                transition: { duration: 0.2 }
                                             }}
                                             whileHover={{ y: -8 }}
                                             onClick={() => navigate(`/product/${product.id}`)}
