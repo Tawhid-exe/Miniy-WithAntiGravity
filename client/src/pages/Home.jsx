@@ -49,12 +49,16 @@ function Home() {
                         className="glass p-12 rounded-3xl z-10 max-w-2xl w-full mx-4"
                     >
                         <motion.div variants={container} initial="hidden" animate="show">
+                            <motion.div variants={item} className="flex justify-center mb-6">
+                                <img
+                                    src="/logo.jpeg"
+                                    alt="Shop Logo"
+                                    className="w-32 h-32 md:w-40 md:h-40 object-contain rounded-2xl shadow-lg"
+                                />
+                            </motion.div>
                             <motion.h1 variants={item} className="text-4xl md:text-6xl font-bold mb-6 text-gradient">
-                                Future E-Commerce
+                                Elegant Treasures & Gadgets
                             </motion.h1>
-                            <motion.p variants={item} className="text-light-text-muted dark:text-slate-300 text-lg md:text-xl mb-8">
-                                Experience the next generation of shopping with stunning animations and seamless interactions.
-                            </motion.p>
                             <motion.button
                                 variants={item}
                                 whileHover={{ scale: 1.05 }}

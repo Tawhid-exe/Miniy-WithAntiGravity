@@ -60,7 +60,7 @@ function Products() {
                                 style={selectedCategory === category ? { color: '#ffffff' } : {}}
                                 className={`px-6 py-3 rounded-full transition-all font-semibold ${selectedCategory === category
                                     ? 'bg-gradient-to-r from-light-primary to-light-secondary dark:from-primary dark:to-secondary shadow-lg !text-white'
-                                    : 'glass text-light-text dark:text-slate-300'
+                                    : 'glass text-light-text dark:text-slate-300 border-2 border-light-primary/50 dark:border-transparent'
                                     }`}
                             >
                                 {category}
@@ -90,8 +90,10 @@ function Products() {
                                         layoutId={`product-${product.id}`}
                                         key={product.id}
                                         layout
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
+                                        initial={{ opacity: 0, y: 30 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -30 }}
+                                        transition={{ duration: 0.4, ease: "easeOut" }}
                                         whileHover={{ y: -8 }}
                                         onClick={() => navigate(`/product/${product.id}`)}
                                         className="glass-card rounded-2xl overflow-hidden cursor-pointer group flex flex-col h-full"
