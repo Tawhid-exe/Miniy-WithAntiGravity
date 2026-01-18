@@ -70,18 +70,16 @@ const AuthPage = () => {
                             </p>
                         </motion.div>
 
-                        <AnimatePresence mode="wait">
-                            <motion.form
-                                key={isLogin ? "login" : "register"}
-                                initial={{ opacity: 0, x: isLogin ? -20 : 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: isLogin ? 20 : -20 }}
-                                transition={{ duration: 0.3 }}
-                                className="space-y-5"
-                                onSubmit={onSubmit}
-                            >
+                        <form className="space-y-5" onSubmit={onSubmit}>
+                            <AnimatePresence initial={false}>
                                 {!isLogin && (
-                                    <div>
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                        animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
+                                        exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="overflow-hidden"
+                                    >
                                         <div className="relative">
                                             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -90,72 +88,73 @@ const AuthPage = () => {
                                                 id="name"
                                                 name="name"
                                                 type="text"
-                                                required
+                                                required={!isLogin}
                                                 className={inputClasses}
                                                 placeholder="Full Name"
                                                 value={name}
                                                 onChange={onChange}
                                             />
                                         </div>
-                                    </div>
-                                )}
-
-                                <div>
-                                    <div className="relative">
-                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                        </span>
-                                        <input
-                                            id="email-address"
-                                            name="email"
-                                            type="email"
-                                            required
-                                            className={inputClasses}
-                                            placeholder="Email Address"
-                                            value={email}
-                                            onChange={onChange}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div className="relative">
-                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                        </span>
-                                        <input
-                                            id="password"
-                                            name="password"
-                                            type="password"
-                                            required
-                                            className={inputClasses}
-                                            placeholder="Password"
-                                            value={password}
-                                            onChange={onChange}
-                                        />
-                                    </div>
-                                </div>
-
-                                {error && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="p-3 rounded-lg bg-red-50 text-red-500 text-sm text-center border border-red-100"
-                                    >
-                                        {error}
                                     </motion.div>
                                 )}
+                            </AnimatePresence>
 
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    type="submit"
-                                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all"
+                            <div>
+                                <div className="relative">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                    </span>
+                                    <input
+                                        id="email-address"
+                                        name="email"
+                                        type="email"
+                                        required
+                                        className={inputClasses}
+                                        placeholder="Email Address"
+                                        value={email}
+                                        onChange={onChange}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="relative">
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                    </span>
+                                    <input
+                                        id="password"
+                                        name="password"
+                                        type="password"
+                                        required
+                                        className={inputClasses}
+                                        placeholder="Password"
+                                        value={password}
+                                        onChange={onChange}
+                                    />
+                                </div>
+                            </div>
+
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-3 rounded-lg bg-red-50 text-red-500 text-sm text-center border border-red-100"
                                 >
-                                    {isLogin ? 'Sign In' : 'Create Account'}
-                                </motion.button>
-                            </motion.form>
-                        </AnimatePresence>
+                                    {error}
+                                </motion.div>
+                            )}
+
+                            <motion.button
+                                layout
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                type="submit"
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all"
+                            >
+                                {isLogin ? 'Sign In' : 'Create Account'}
+                            </motion.button>
+                        </form>
 
                         <div className="mt-8 text-center">
                             <button
