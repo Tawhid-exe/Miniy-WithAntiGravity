@@ -6,11 +6,11 @@ export const generateInvoice = async (order) => {
 
     // Add company logo or header
     doc.setFontSize(20);
-    doc.text('FutureShop', 14, 22);
+    doc.text('Minivy', 14, 22);
     doc.setFontSize(11);
     doc.text('Business Management System', 14, 30);
     doc.text('123 Tech Street, Silicon Valley, CA', 14, 36);
-    doc.text('Email: support@futureshop.com', 14, 42);
+    doc.text('Email: support@minivy.com', 14, 42);
 
     // Order Details
     doc.setFontSize(14);
