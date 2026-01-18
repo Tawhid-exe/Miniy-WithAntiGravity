@@ -55,10 +55,11 @@ const AuthPage = () => {
                 <div className="relative w-full max-w-md mx-4">
                     <motion.div
                         layout
+                        transition={{ layout: { duration: 0.3, type: "spring", stiffness: 100, damping: 20 } }}
                         className="relative bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 p-8 overflow-hidden"
                     >
                         <motion.div
-                            layout
+                            layout="position"
                             className="text-center mb-8"
                         >
                             <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
