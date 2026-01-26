@@ -83,6 +83,14 @@
     @apply bg-white/90 backdrop-blur-md border border-slate-200 shadow-lg hover:shadow-xl hover:border-light-primary/30 transition-all duration-500;
   }
 
+  .dark .glass-button {
+    @apply bg-white/5 hover:bg-white/10 border border-white/5 text-white backdrop-blur-md transition-all duration-300;
+  }
+
+  .light .glass-button {
+    @apply bg-white/60 hover:bg-white/80 border border-purple-100 text-slate-700 backdrop-blur-md transition-all duration-300;
+  }
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
   }

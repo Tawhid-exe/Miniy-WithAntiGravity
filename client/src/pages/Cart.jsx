@@ -18,9 +18,9 @@ function Cart() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="text-center"
+                        className="text-center glass-card p-12 rounded-3xl max-w-lg w-full"
                     >
-                        <ShoppingBag className="mx-auto mb-4 text-gray-400 dark:text-slate-600" size={80} />
+                        <ShoppingBag className="mx-auto mb-4 text-gray-400 dark:text-slate-500" size={80} />
                         <h1 className="text-4xl font-bold text-light-text dark:text-light mb-4">Your Cart is Empty</h1>
                         <p className="text-light-text-muted dark:text-slate-400 mb-8">Add some amazing products to get started!</p>
                         <button
