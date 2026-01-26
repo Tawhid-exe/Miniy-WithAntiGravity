@@ -59,12 +59,7 @@ const AuthPage = () => {
 
     return (
         <PageTransition>
-            <div className="flex justify-center items-center min-h-[calc(100vh-80px)] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-100 via-gray-100 to-gray-50 dark:from-gray-900 dark:via-gray-950 dark:to-black">
-
-                {/* Decorative Elements */}
-                <div className="absolute top-20 left-20 w-72 h-72 bg-purple-400/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-                <div className="absolute top-20 right-20 w-72 h-72 bg-indigo-400/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-                <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-pink-400/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+            <div className="flex justify-center items-center min-h-[calc(100vh-80px)]">
 
                 <div className="relative w-full max-w-md mx-4">
                     <motion.div

@@ -15,15 +15,18 @@ import CustomerDirectory from './pages/admin/CustomerDirectory';
 import InventoryAudit from './pages/admin/InventoryAudit';
 import AdminOrders from './pages/admin/Orders';
 
+import BackgroundBlobs from './components/BackgroundBlobs';
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <CartProvider>
           <Router>
-            <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-950">
+            <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
+              <BackgroundBlobs />
               <Navbar />
-              <div className="pt-20">
+              <div className="pt-20 relative z-10">
                 <AnimatedRoutes />
               </div>
             </div>

@@ -29,24 +29,6 @@ function Home() {
         <PageTransition>
             <div className="min-h-screen bg-light-bg dark:bg-dark overflow-hidden transition-colors duration-300">
                 <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
-                    <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-                        <motion.div
-                            animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
-                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                            className="absolute top-1/4 left-1/4 w-96 h-96 bg-light-primary/10 dark:bg-primary/20 rounded-full mix-blend-screen filter blur-3xl"
-                        />
-                        <motion.div
-                            animate={{ scale: [1, 1.3, 1], rotate: [0, -90, 0] }}
-                            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                            className="absolute top-1/3 right-1/4 w-96 h-96 bg-light-secondary/10 dark:bg-secondary/20 rounded-full mix-blend-screen filter blur-3xl"
-                        />
-                        <motion.div
-                            animate={{ scale: [1, 1.1, 1], x: [0, 50, 0], y: [0, 30, 0] }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute bottom-1/4 left-1/2 w-80 h-80 bg-light-accent/10 dark:bg-primary/15 rounded-full mix-blend-screen filter blur-3xl"
-                        />
-                    </div>
-
                     <div className="container mx-auto z-10 grid lg:grid-cols-2 gap-12 items-center">
                         {/* Text Content */}
                         <motion.div
