@@ -27,7 +27,7 @@ function Home() {
 
     return (
         <PageTransition>
-            <div className="min-h-screen bg-light-bg dark:bg-dark overflow-hidden transition-colors duration-300">
+            <div className="min-h-screen overflow-hidden transition-colors duration-300">
                 <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
                     <div className="container mx-auto z-10 grid lg:grid-cols-2 gap-12 items-center">
                         {/* Text Content */}

@@ -46,7 +46,7 @@ function Products() {
 
     return (
         <PageTransition>
-            <div className="min-h-screen bg-light-bg dark:bg-dark py-12 px-4 overflow-hidden transition-colors duration-300">
+            <div className="min-h-screen py-12 px-4 overflow-hidden transition-colors duration-300">
                 <div className="max-w-7xl mx-auto">
                     <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} className="mb-12 text-center">
                         <h1 className="text-6xl font-bold mb-4 text-gradient">Our Products</h1>
