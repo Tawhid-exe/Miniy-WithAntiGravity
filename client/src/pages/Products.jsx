@@ -12,15 +12,20 @@ function Products() {
     const { addToCart } = useCart();
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [addedItems, setAddedItems] = useState(new Set());
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(() => {
+        return !sessionStorage.getItem('productsLoaded');
+    });
 
     useEffect(() => {
-        // Simulate loading delay for skeleton demo
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 200);
-        return () => clearTimeout(timer);
-    }, []);
+        if (loading) {
+            // Simulate loading delay only if not previously loaded
+            const timer = setTimeout(() => {
+                setLoading(false);
+                sessionStorage.setItem('productsLoaded', 'true');
+            }, 200);
+            return () => clearTimeout(timer);
+        }
+    }, [loading]);
 
     const categories = ['All', ...new Set(products.map(p => p.category))];
     const filteredProducts = selectedCategory === 'All' ? products : products.filter(p => p.category === selectedCategory);
@@ -68,9 +73,9 @@ function Products() {
                         ))}
                     </div>
 
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="popLayout">
                         <motion.div
-                            key={`${selectedCategory}-${loading ? 'loading' : 'loaded'}`}
+                            key={selectedCategory}
                             layout
                             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
                             initial={{ opacity: 0 }}
