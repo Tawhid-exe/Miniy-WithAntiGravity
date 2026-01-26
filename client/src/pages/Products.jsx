@@ -81,7 +81,7 @@ function Products() {
                             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            exit={{ opacity: 0, transition: { duration: 0.1 } }}
                             transition={{ duration: 0.2 }}
                         >
                             {loading ? (
