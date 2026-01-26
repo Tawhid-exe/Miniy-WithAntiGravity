@@ -16,6 +16,7 @@ import InventoryAudit from './pages/admin/InventoryAudit';
 import AdminOrders from './pages/admin/Orders';
 
 import BackgroundBlobs from './components/BackgroundBlobs';
+import Spotlight from './components/Spotlight';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <CartProvider>
           <Router>
             <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-black relative overflow-hidden">
+              <Spotlight />
               <BackgroundBlobs />
               <Navbar />
               <div className="pt-20 relative z-10">
