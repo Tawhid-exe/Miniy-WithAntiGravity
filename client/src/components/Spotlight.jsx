@@ -7,7 +7,8 @@ export default function Spotlight() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
     // Use spring physics for smooth following like Windows 11
-    const springConfig = { damping: 25, stiffness: 150, mass: 0.5 };
+    // Updated: Much tighter/faster response based on feedback
+    const springConfig = { damping: 28, stiffness: 300, mass: 0.2 };
     const mouseX = useSpring(0, springConfig);
     const mouseY = useSpring(0, springConfig);
 
@@ -23,11 +24,11 @@ export default function Spotlight() {
     }, [mouseX, mouseY]);
 
     // Dynamic background gradient based on theme
-    // Dark mode: White/Blue-ish cool glow
-    // Light mode: Purple/Primary warm glow
+    // Dark mode: White/Blue-ish cool glow - Increased opacity
+    // Light mode: Purple/Primary warm glow - Increased opacity
     const gradient = useMotionTemplate`radial-gradient(
-        200px circle at ${mouseX}px ${mouseY}px,
-        ${isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(124, 58, 237, 0.15)'},
+        100px circle at ${mouseX}px ${mouseY}px,
+        ${isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(124, 58, 237, 0.25)'},
         transparent 80%
     )`;
 
