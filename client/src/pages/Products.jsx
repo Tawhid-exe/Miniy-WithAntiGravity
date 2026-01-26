@@ -7,22 +7,23 @@ import { ShoppingCart, Sparkles } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { ProductSkeleton } from '../components/Skeleton';
 
+// Module-level variable to track if products have been loaded in this session
+let hasVisited = false;
+
 function Products() {
     const navigate = useNavigate();
     const { addToCart } = useCart();
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [addedItems, setAddedItems] = useState(new Set());
-    const [loading, setLoading] = useState(() => {
-        return !sessionStorage.getItem('productsLoaded');
-    });
+    const [loading, setLoading] = useState(!hasVisited);
 
     useEffect(() => {
         if (loading) {
-            // Simulate loading delay only if not previously loaded
+            // Simulate loading delay for skeleton demo
             const timer = setTimeout(() => {
                 setLoading(false);
-                sessionStorage.setItem('productsLoaded', 'true');
-            }, 200);
+                hasVisited = true;
+            }, 1500);
             return () => clearTimeout(timer);
         }
     }, [loading]);

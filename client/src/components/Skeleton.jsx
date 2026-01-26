@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 
 const Skeleton = ({ className, height, width, variant = "rect" }) => {
-    const baseClasses = "bg-gray-200 dark:bg-gray-700 overflow-hidden relative";
-    const rounded = variant === "circle" ? "rounded-full" : "rounded-md";
+    const baseClasses = "bg-gray-100 dark:bg-gray-800 overflow-hidden relative";
+    const rounded = variant === "circle" ? "rounded-full" : "rounded-lg";
 
     return (
         <div
@@ -10,13 +10,13 @@ const Skeleton = ({ className, height, width, variant = "rect" }) => {
             style={{ height, width }}
         >
             <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-gray-600/20 to-transparent"
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-gray-600/10 to-transparent"
                 initial={{ x: '-100%' }}
                 animate={{ x: '100%' }}
                 transition={{
                     repeat: Infinity,
-                    duration: 1.5,
-                    ease: "linear"
+                    duration: 1.2,
+                    ease: "easeInOut"
                 }}
             />
         </div>
