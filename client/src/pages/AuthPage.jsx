@@ -65,7 +65,7 @@ const AuthPage = () => {
                     <motion.div
                         layout
                         transition={{ layout: { duration: 0.3, type: "spring", stiffness: 100, damping: 20 } }}
-                        className="relative bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/30 p-8 overflow-hidden"
+                        className="relative glass-card p-8 overflow-hidden"
                     >
                         <motion.div
                             layout="position"
