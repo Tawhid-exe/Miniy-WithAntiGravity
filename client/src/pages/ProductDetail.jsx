@@ -6,21 +6,12 @@ import { ArrowLeft, ShoppingCart, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import PageTransition from '../components/PageTransition';
-import { ProductSkeleton } from '../components/Skeleton';
 
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
     const [added, setAdded] = useState(false);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, []);
 
     const product = products.find(p => p.id === parseInt(id));
 

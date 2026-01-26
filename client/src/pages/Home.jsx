@@ -17,18 +17,9 @@ const item = {
 };
 
 import PageTransition from '../components/PageTransition';
-import { ProductSkeleton } from '../components/Skeleton';
 
 function Home() {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, []);
 
     return (
         <PageTransition>
