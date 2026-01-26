@@ -74,9 +74,9 @@ function Products() {
                         ))}
                     </div>
 
-                    <AnimatePresence mode="popLayout">
+                    <AnimatePresence mode="wait">
                         <motion.div
-                            key={selectedCategory}
+                            key={`${selectedCategory}-${loading ? 'loading' : 'loaded'}`}
                             layout
                             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
                             initial={{ opacity: 0 }}
