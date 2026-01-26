@@ -23,7 +23,7 @@ function Products() {
             const timer = setTimeout(() => {
                 setLoading(false);
                 hasVisited = true;
-            }, 1500);
+            }, 500);
             return () => clearTimeout(timer);
         }
     }, [loading]);
