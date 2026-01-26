@@ -24,18 +24,21 @@ export default function Spotlight() {
     }, [mouseX, mouseY]);
 
     // Dynamic background gradient based on theme
-    // Dark mode: White/Blue-ish cool glow - Increased opacity
-    // Light mode: Purple/Primary warm glow - Increased opacity
+    // Dark mode: White/Blue-ish cool glow - High opacity + Overlay blend to "reveal" elements
+    // Light mode: Purple/Primary warm glow
     const gradient = useMotionTemplate`radial-gradient(
-        100px circle at ${mouseX}px ${mouseY}px,
-        ${isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(124, 58, 237, 0.25)'},
+        120px circle at ${mouseX}px ${mouseY}px,
+        ${isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(124, 58, 237, 0.3)'},
         transparent 80%
     )`;
 
     return (
         <motion.div
             className="fixed inset-0 z-50 pointer-events-none overflow-hidden"
-            style={{ background: gradient }}
+            style={{
+                background: gradient,
+                mixBlendMode: isDarkMode ? 'overlay' : 'normal'
+            }}
         />
     );
 }
