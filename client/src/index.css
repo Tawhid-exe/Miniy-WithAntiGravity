@@ -65,36 +65,79 @@
 
 @layer utilities {
 
-  /* Dark mode glass effects - Neon Liquid Style */
+  /* Dark mode glass effects - Premium Crystal Style */
   .dark .glass {
-    @apply bg-black/30 backdrop-blur-3xl backdrop-saturate-200 border-b border-white/20 shadow-2xl;
-    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+    @apply bg-transparent backdrop-blur-[40px] backdrop-saturate-[180%] rounded-[30px];
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+      0 20px 40px -10px rgba(0, 0, 0, 0.6);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
   }
 
   .dark .glass-card {
-    @apply bg-black/40 backdrop-blur-3xl backdrop-saturate-200 border border-white/20 shadow-xl hover:bg-black/50 hover:border-white/30 transition-all duration-500 rounded-3xl;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    @apply bg-transparent backdrop-blur-[40px] backdrop-saturate-[180%] transition-all duration-500 rounded-[30px];
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      /* Outer Thin Border */
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+      /* Top Highlight (Rim Light) */
+      inset 0 -1px 0 0 rgba(255, 255, 255, 0.05),
+      /* Bottom Subtle Edge */
+      0 20px 50px -10px rgba(0, 0, 0, 0.6),
+      /* Deep Drop Shadow */
+      0 0 20px rgba(255, 255, 255, 0.02);
+    /* Subtle Glow */
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  }
+
+  .dark .glass-card:hover {
+    @apply -translate-y-1;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
+      /* Brighter on hover */
+      0 30px 60px -12px rgba(0, 0, 0, 0.7),
+      0 0 25px rgba(255, 255, 255, 0.05);
   }
 
   .dark .glass-button {
-    @apply bg-white/5 hover:bg-white/10 border border-white/20 text-white backdrop-blur-xl backdrop-saturate-200 transition-all duration-300 shadow-lg shadow-primary/20;
-    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+    @apply bg-white/5 text-white backdrop-blur-2xl backdrop-saturate-[150%] transition-all duration-300 shadow-xl font-medium tracking-wide;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+      0 4px 10px rgba(0, 0, 0, 0.3);
   }
 
-  /* Light mode glass effects */
+  .dark .glass-button:hover {
+    @apply bg-white/10 scale-[1.02];
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
+      0 8px 20px rgba(0, 0, 0, 0.4),
+      0 0 15px rgba(255, 255, 255, 0.1);
+  }
+
+  /* Light mode glass effects - Crystal Style */
   .light .glass {
-    @apply bg-white/70 backdrop-blur-3xl backdrop-saturate-150 border-b border-white/40 shadow-xl;
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+    @apply bg-white/40 backdrop-blur-[30px] backdrop-saturate-[150%] border border-white/40 shadow-xl;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
   }
 
   .light .glass-card {
-    @apply bg-white/60 backdrop-blur-3xl backdrop-saturate-200 border border-white/40 shadow-xl hover:shadow-2xl hover:bg-white/70 transition-all duration-500 rounded-3xl;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    @apply bg-white/40 backdrop-blur-[40px] backdrop-saturate-[150%] border-none shadow-2xl transition-all duration-500 rounded-[30px];
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.8),
+      0 20px 40px rgba(31, 38, 135, 0.1);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
   }
 
   .light .glass-button {
-    @apply bg-white/60 hover:bg-white/80 border border-white/50 text-slate-800 backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 shadow-lg font-semibold;
-    box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.3);
+    @apply bg-white/50 text-slate-800 backdrop-blur-xl backdrop-saturate-[150%] transition-all duration-300 font-semibold;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+      0 4px 15px rgba(0, 0, 0, 0.05);
   }
 
   .text-gradient {
