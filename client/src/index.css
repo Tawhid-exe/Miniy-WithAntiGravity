@@ -130,6 +130,42 @@
       0 0 20px rgba(255, 255, 255, 0.2);
   }
 
+  /* Dark Mode Spotlight Effect - Bound to Element */
+  .dark .glass-card,
+  .dark .glass-button {
+    position: relative;
+    overflow: hidden;
+    /* Strict containment */
+  }
+
+  .dark .glass-card::after,
+  .dark .glass-button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: radial-gradient(80px circle at var(--mouse-x, -100px) var(--mouse-y, -100px),
+        rgba(255, 255, 255, 0.4),
+        transparent 100%);
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    border-radius: inherit;
+    /* Copy parent roundness */
+    background-attachment: fixed;
+    /* Keeps the gradient relative to viewport, matching cursor */
+  }
+
+  /* Only show spotlight on hover or when close (implied by mouse position) */
+  /* Actually, with background-attachment: fixed, we can just leave opacity 1, 
+     the gradient will only be 'visible' where the cursor is. 
+     But we'll set opacity 1 to enable the effect. */
+  .dark .glass-card::after,
+  .dark .glass-button::after {
+    opacity: 1;
+  }
+
   /* Light mode glass effects - Crystal Style */
   .light .glass {
     @apply bg-white/40 backdrop-blur-[30px] backdrop-saturate-[150%] border border-white/40 shadow-xl;
@@ -137,12 +173,28 @@
   }
 
   .light .glass-card {
+    position: relative;
+    overflow: hidden;
     @apply bg-white/40 backdrop-blur-[40px] backdrop-saturate-[150%] border-none shadow-2xl transition-all duration-500 rounded-[30px];
     box-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.4),
       inset 0 1px 0 0 rgba(255, 255, 255, 0.8),
       0 20px 40px rgba(31, 38, 135, 0.1);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  }
+
+  .light .glass-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: radial-gradient(80px circle at var(--mouse-x, -100px) var(--mouse-y, -100px),
+        rgba(124, 58, 237, 0.3),
+        transparent 100%);
+    mix-blend-mode: color-dodge;
+    border-radius: inherit;
+    background-attachment: fixed;
+    pointer-events: none;
   }
 
   .light .glass-button {
