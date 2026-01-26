@@ -110,7 +110,7 @@ function Products() {
                                                 scale: 1,
                                                 y: 0,
                                                 transition: {
-                                                    duration: 0.3,
+                                                    duration: 0.15,
                                                     delay: index * 0.03,
                                                     ease: [0.25, 0.4, 0.25, 1]
                                                 }
