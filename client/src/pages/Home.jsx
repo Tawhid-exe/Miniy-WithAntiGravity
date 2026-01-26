@@ -82,8 +82,8 @@ function Home() {
                                     key={product.id}
                                     className="absolute glass-card p-4 rounded-2xl flex items-center gap-4 w-72 cursor-pointer hover:bg-white/10 transition-colors"
                                     style={{
-                                        top: index === 0 ? '10%' : index === 1 ? '40%' : '70%',
-                                        left: index === 0 ? '0%' : index === 1 ? '20%' : '5%',
+                                        top: index === 0 ? '5%' : index === 1 ? '35%' : '65%',
+                                        left: index === 0 ? '0%' : index === 1 ? '15%' : '5%',
                                         zIndex: 3 - index,
                                     }}
                                     animate={{
