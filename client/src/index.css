@@ -65,57 +65,62 @@
 
 @layer utilities {
 
-  /* Dark mode glass effects - Premium Crystal Style */
+  /* Dark mode glass effects - Hyper-Crystal Style */
   .dark .glass {
-    @apply bg-transparent backdrop-blur-[40px] backdrop-saturate-[180%] rounded-[30px];
+    @apply bg-transparent backdrop-blur-[50px] backdrop-saturate-[200%] rounded-[30px];
     box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
-      0 20px 40px -10px rgba(0, 0, 0, 0.6);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+      inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+      /* Sharper outer edge */
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.6),
+      /* Strong Top Bevel */
+      inset 0 0 30px rgba(255, 255, 255, 0.03),
+      /* Inner Glow */
+      0 20px 40px -10px rgba(0, 0, 0, 0.8);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
   }
 
   .dark .glass-card {
-    @apply bg-transparent backdrop-blur-[40px] backdrop-saturate-[180%] transition-all duration-500 rounded-[30px];
+    @apply bg-transparent backdrop-blur-[50px] backdrop-saturate-[200%] transition-all duration-500 rounded-[30px];
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Subtle physical border */
     box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-      /* Outer Thin Border */
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
-      /* Top Highlight (Rim Light) */
-      inset 0 -1px 0 0 rgba(255, 255, 255, 0.05),
-      /* Bottom Subtle Edge */
-      0 20px 50px -10px rgba(0, 0, 0, 0.6),
-      /* Deep Drop Shadow */
-      0 0 20px rgba(255, 255, 255, 0.02);
-    /* Subtle Glow */
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
+      /* Laser Top Highlight */
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+      /* Inner Definition */
+      inset 0 0 40px rgba(255, 255, 255, 0.02),
+      /* Volumetric Fog */
+      0 20px 60px -10px rgba(0, 0, 0, 0.9),
+      /* Deepest Shadow */
+      0 0 15px rgba(255, 255, 255, 0.05);
+    /* Outer Glow/Bloom */
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.0) 100%);
   }
 
   .dark .glass-card:hover {
     @apply -translate-y-1;
     box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.15),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
-      /* Brighter on hover */
-      0 30px 60px -12px rgba(0, 0, 0, 0.7),
-      0 0 25px rgba(255, 255, 255, 0.05);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.7),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 0 50px rgba(255, 255, 255, 0.05),
+      0 30px 70px -12px rgba(0, 0, 0, 1),
+      0 0 25px rgba(255, 255, 255, 0.1);
+    /* Stronger Bloom on Hover */
   }
 
   .dark .glass-button {
-    @apply bg-white/5 text-white backdrop-blur-2xl backdrop-saturate-[150%] transition-all duration-300 shadow-xl font-medium tracking-wide;
+    @apply bg-white/5 text-white backdrop-blur-2xl backdrop-saturate-[200%] transition-all duration-300 shadow-xl font-medium tracking-wide border border-white/10;
     box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
-      0 4px 10px rgba(0, 0, 0, 0.3);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.6),
+      0 0 15px rgba(255, 255, 255, 0.05);
   }
 
   .dark .glass-button:hover {
     @apply bg-white/10 scale-[1.02];
     box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.2),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
-      0 8px 20px rgba(0, 0, 0, 0.4),
-      0 0 15px rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.8),
+      0 0 20px rgba(255, 255, 255, 0.15),
+      0 10px 20px rgba(0, 0, 0, 0.5);
   }
 
   /* Light mode glass effects - Crystal Style */

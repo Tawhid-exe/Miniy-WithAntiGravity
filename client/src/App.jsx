@@ -23,7 +23,7 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <Router>
-            <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
+            <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-black relative overflow-hidden">
               <BackgroundBlobs />
               <Navbar />
               <div className="pt-20 relative z-10">
