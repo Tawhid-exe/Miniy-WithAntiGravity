@@ -39,7 +39,7 @@ export default function Spotlight() {
             style={{
                 background: theme === 'dark'
                     ? `radial-gradient(circle at center, rgba(124, 58, 237, 0.35), rgba(124, 58, 237, 0.15) 50%, transparent 70%)`
-                    : `radial-gradient(circle at center, rgba(124, 58, 237, 0.35), rgba(124, 58, 237, 0.15) 50%, transparent 70%)`, // Use same violet glow or adjust to lighter violet if needed
+                    : `radial-gradient(circle at center, rgba(124, 58, 237, 0.1), rgba(124, 58, 237, 0.05) 50%, transparent 70%)`, // Much softer for light mode (~30%)
                 marginLeft: '-100px', // Center the generic spotlight div
                 marginTop: '-100px',
                 opacity: 0, // Hidden until moved
