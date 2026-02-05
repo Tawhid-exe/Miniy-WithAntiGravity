@@ -11,6 +11,10 @@ export const AuthProvider = ({ children }) => {
 
     // Removed local api creation, using imported instance
 
+    useEffect(() => {
+        loadUser();
+    }, []);
+
     const loadUser = async () => {
         try {
             // We need a specific endpoint to just get user info.

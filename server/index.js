@@ -78,13 +78,23 @@ app.use('/api', limiter);
 
 // Route Imports
 // Route Imports
+// Route Imports
 const product = require('./routes/productRoute');
 const user = require('./routes/authRoute');
+const order = require('./routes/orderRoute');
 const admin = require('./routes/adminRoute');
 const path = require('path');
+const logger = require('./config/logger');
+
+// Request Logging Middleware
+app.use((req, res, next) => {
+    logger.info(`${req.method} ${req.url} | IP: ${req.ip}`);
+    next();
+});
 
 app.use('/api/v1', product);
 app.use('/api/v1', user);
+app.use('/api/v1', order);
 app.use('/api/v1', admin);
 
 
@@ -105,14 +115,14 @@ if (process.env.NODE_ENV === 'production') {
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/antigravity');
-        console.log('MongoDB Connected');
+        logger.info('MongoDB Connected');
     } catch (err) {
-        console.error('Database connection error:', err);
+        logger.error(`Database connection error: ${err.message}`);
     }
 };
 
 // Start Server
 app.listen(PORT, () => {
     connectDB();
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
 });

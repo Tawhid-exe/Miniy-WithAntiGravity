@@ -1,12 +1,25 @@
 const User = require('../models/User');
 
+const logger = require('../config/logger');
+
 // Register a User
 exports.registerUser = async (req, res, next) => {
     try {
+        // SECURITY FIX: Strictly extract fields. Do NOT allow 'role' to be passed.
         const { name, email, password } = req.body;
-        const user = await User.create({ name, email, password });
+
+        // Force role to 'user' for public registration
+        const user = await User.create({
+            name,
+            email,
+            password,
+            role: 'user'
+        });
+
+        logger.info(`New user registered: ${email}`);
         sendToken(user, 201, res);
     } catch (error) {
+        logger.error(`Register Error: ${error.message}`);
         res.status(500).json({ success: false, message: error.message });
     }
 };
@@ -15,19 +28,25 @@ exports.registerUser = async (req, res, next) => {
 exports.loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
+        // Validation handled by middleware, but double check doesn't hurt
         if (!email || !password) {
             return res.status(400).json({ success: false, message: "Please Enter Email and Password" });
         }
         const user = await User.findOne({ email }).select("+password");
         if (!user) {
+            logger.warn(`Failed login attempt: ${email}`);
             return res.status(401).json({ success: false, message: "Invalid email or password" });
         }
         const isPasswordMatched = await user.comparePassword(password);
         if (!isPasswordMatched) {
+            logger.warn(`Failed login attempt (bad password): ${email}`);
             return res.status(401).json({ success: false, message: "Invalid email or password" });
         }
+
+        logger.info(`User logged in: ${email}`);
         sendToken(user, 200, res);
     } catch (error) {
+        logger.error(`Login Error: ${error.message}`);
         res.status(500).json({ success: false, message: error.message });
     }
 };

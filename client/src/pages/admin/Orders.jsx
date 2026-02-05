@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import api from '../../api/axios';
-import { generateInvoice } from '../../utils/invoiceGenerator';
 import { FileText } from 'lucide-react';
 
 const AdminOrders = () => {
@@ -87,7 +86,7 @@ const AdminOrders = () => {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button
-                                        onClick={() => generateInvoice(order)}
+                                        onClick={() => window.open(`${api.defaults.baseURL}/order/${order._id}/invoice`, '_blank')}
                                         className="text-purple-600 hover:text-purple-900 flex items-center gap-1"
                                     >
                                         <FileText size={16} /> Invoice

@@ -14,6 +14,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import CustomerDirectory from './pages/admin/CustomerDirectory';
 import InventoryAudit from './pages/admin/InventoryAudit';
 import AdminOrders from './pages/admin/Orders';
+import AdminProducts from './pages/admin/Products';
 
 import BackgroundBlobs from './components/BackgroundBlobs';
 import Spotlight from './components/Spotlight';
@@ -54,7 +55,7 @@ function AnimatedRoutes() {
         {/* Admin Routes - keeping them simple for now */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="products" element={<div className="p-10">Products Manager (Coming Soon)</div>} />
+          <Route path="products" element={<AdminProducts />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="customers" element={<CustomerDirectory />} />
           <Route path="inventory" element={<InventoryAudit />} />

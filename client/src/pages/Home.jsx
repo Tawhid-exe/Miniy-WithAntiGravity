@@ -18,6 +18,7 @@ const item = {
 };
 
 import PageTransition from '../components/PageTransition';
+import FeaturedProducts from '../components/FeaturedProducts';
 
 function Home() {
     const navigate = useNavigate();
@@ -122,6 +123,8 @@ function Home() {
                         </motion.div>
                     </div>
                 </section>
+
+                <FeaturedProducts />
 
                 <section className="py-20 px-4">
                     <div className="max-w-6xl mx-auto">
