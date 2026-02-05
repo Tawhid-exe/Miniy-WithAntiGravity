@@ -43,7 +43,7 @@ function Home() {
                                     New Collection 2024
                                 </span>
                             </motion.div>
-                            <motion.h1 variants={item} className="text-6xl md:text-8xl font-bold mb-6 text-gradient leading-tight tracking-tight">
+                            <motion.h1 variants={item} className="text-5xl md:text-7xl font-bold mb-6 text-gradient leading-tight">
                                 Elegant Treasures <br /> & Gadgets
                             </motion.h1>
                             <motion.p variants={item} className="text-light-text-muted dark:text-slate-400 text-lg md:text-xl mb-8 max-w-lg mx-auto lg:mx-0">
@@ -82,17 +82,15 @@ function Home() {
                                     key={product.id}
                                     className="absolute glass-card p-4 rounded-2xl flex items-center gap-4 w-72 cursor-pointer hover:bg-white/10 transition-colors"
                                     style={{
-                                        top: index === 0 ? '15%' : index === 1 ? '30%' : '55%',
-                                        left: index === 0 ? '10%' : index === 1 ? '25%' : '5%',
-                                        zIndex: index === 1 ? 20 : 10,
-                                        scale: index === 1 ? 1.1 : 0.9,
-                                        filter: index === 1 ? 'blur(0px)' : 'blur(1px)' // Focus effect on center card
+                                        top: index === 0 ? '10%' : index === 1 ? '40%' : '70%',
+                                        left: index === 0 ? '0%' : index === 1 ? '20%' : '5%',
+                                        zIndex: 3 - index,
                                     }}
                                     animate={{
-                                        y: [0, -10, 0], // Gentler float
+                                        y: [0, -15, 0],
                                     }}
                                     transition={{
-                                        duration: 4 + index,
+                                        duration: 3 + index,
                                         repeat: Infinity,
                                         ease: "easeInOut",
                                         delay: index * 0.5

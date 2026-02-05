@@ -138,6 +138,26 @@
     /* Strict containment */
   }
 
+  .dark .glass-card::after,
+  .dark .glass-button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(200px circle at var(--mouse-x, -200px) var(--mouse-y, -200px),
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0.25) 20%,
+        rgba(255, 255, 255, 0.15) 40%,
+        rgba(255, 255, 255, 0.08) 60%,
+        rgba(255, 255, 255, 0.03) 80%,
+        transparent 100%);
+    opacity: 1;
+    transition: none;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    border-radius: inherit;
+    background-attachment: fixed;
+  }
 
   /* Light mode glass effects - Crystal Style */
   .light .glass {
@@ -156,12 +176,66 @@
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
   }
 
+  .light .glass-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(200px circle at var(--mouse-x, -200px) var(--mouse-y, -200px),
+        rgba(124, 58, 237, 0.3) 0%,
+        rgba(124, 58, 237, 0.18) 20%,
+        rgba(124, 58, 237, 0.10) 40%,
+        rgba(124, 58, 237, 0.05) 60%,
+        rgba(124, 58, 237, 0.02) 80%,
+        transparent 100%);
+    opacity: 1;
+    transition: none;
+    mix-blend-mode: color-dodge;
+    border-radius: inherit;
+    background-attachment: fixed;
+    pointer-events: none;
+  }
 
   .light .glass-button {
-    @apply bg-white/50 text-slate-800 backdrop-blur-xl backdrop-saturate-[150%] transition-all duration-300 font-semibold;
+    @apply text-slate-700 backdrop-blur-[40px] backdrop-saturate-[180%] transition-all duration-300 font-semibold rounded-full;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(255, 255, 255, 0.7) 50%,
+        rgba(255, 230, 240, 0.8) 100%);
+
+    /* Liquid glass effect with thick edges */
     box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.5),
-      0 4px 15px rgba(0, 0, 0, 0.05);
+      /* Bright top highlight (thick glass edge) */
+      inset 0 1px 2px 0 rgba(255, 255, 255, 1),
+      /* Subtle inner border */
+      inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+      /* Pink accent glow on right edge */
+      inset -1px 0 8px rgba(255, 100, 150, 0.15),
+      /* Soft inner glow */
+      inset 0 0 30px rgba(255, 255, 255, 0.4),
+      /* Outer shadow for depth */
+      0 8px 32px rgba(150, 100, 200, 0.15),
+      /* Subtle lift shadow */
+      0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .light .glass-button:hover {
+    @apply scale-[1.02];
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.75) 50%,
+        rgba(255, 220, 235, 0.85) 100%);
+
+    box-shadow:
+      /* Brighter highlight on hover */
+      inset 0 1px 3px 0 rgba(255, 255, 255, 1),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+      /* Stronger pink accent */
+      inset -2px 0 12px rgba(255, 100, 150, 0.25),
+      inset 0 0 40px rgba(255, 255, 255, 0.5),
+      /* Enhanced outer glow */
+      0 12px 48px rgba(150, 100, 200, 0.25),
+      0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .text-gradient {

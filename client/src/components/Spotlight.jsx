@@ -1,37 +1,45 @@
-import { useEffect } from 'react';
-import { useSpring } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 
 export default function Spotlight() {
-    // Use spring physics for smooth following like Windows 11
-    const springConfig = { damping: 28, stiffness: 300, mass: 0.2 };
-    const mouseX = useSpring(0, springConfig);
-    const mouseY = useSpring(0, springConfig);
+    const spotlightRef = useRef(null);
 
     useEffect(() => {
-        const handleMouseMove = (e) => {
-            mouseX.set(e.clientX);
-            mouseY.set(e.clientY);
+        const updateSpotlight = (e) => {
+            if (spotlightRef.current) {
+                // Directly update the DOM for zero latency (bypassing React state)
+                spotlightRef.current.style.opacity = '1';
+                spotlightRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+            }
         };
 
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, [mouseX, mouseY]);
+        const hideSpotlight = () => {
+            if (spotlightRef.current) {
+                spotlightRef.current.style.opacity = '0';
+            }
+        };
 
-    useEffect(() => {
-        // Sync spring values to CSS variables for strict element-bound masking
-        const unsubscribeX = mouseX.on("change", (x) => {
-            document.documentElement.style.setProperty("--mouse-x", `${x}px`);
-        });
-        const unsubscribeY = mouseY.on("change", (y) => {
-            document.documentElement.style.setProperty("--mouse-y", `${y}px`);
-        });
+        window.addEventListener('mousemove', updateSpotlight);
+        window.addEventListener('mouseout', hideSpotlight);
+        // Also handle scrolling to keep it relative if needed, but for fixed position it's fine.
 
         return () => {
-            unsubscribeX();
-            unsubscribeY();
+            window.removeEventListener('mousemove', updateSpotlight);
+            window.removeEventListener('mouseout', hideSpotlight);
         };
-    }, [mouseX, mouseY]);
+    }, []);
 
-    // No visual render - this component just drives the physics engine
-    return null;
+    // Visual Spotlight Element
+    return (
+        <div
+            ref={spotlightRef}
+            className="fixed top-0 left-0 w-[200px] h-[200px] pointer-events-none z-[9999] transition-opacity duration-300"
+            style={{
+                background: `radial-gradient(circle at center, rgba(124, 58, 237, 0.15), rgba(124, 58, 237, 0.05) 50%, transparent 70%)`,
+                marginLeft: '-100px', // Center the generic spotlight div
+                marginTop: '-100px',
+                opacity: 0, // Hidden until moved
+                mixBlendMode: 'screen' // Ensures it looks glowy on dark/light
+            }}
+        />
+    );
 }
