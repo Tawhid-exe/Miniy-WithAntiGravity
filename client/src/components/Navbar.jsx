@@ -1,24 +1,22 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Home, Package, User, LogIn, LayoutDashboard } from 'lucide-react';
+import { ShoppingCart, Home, Package, User, LogIn } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
+import { useCustomer } from '../context/CustomerContext';
 import ThemeToggle from './ThemeToggle';
 
 function Navbar() {
     const location = useLocation();
     const { getCartCount } = useCart();
-    const { isAuthenticated, user, logout } = useAuth();
+    const { customer, isLoggedIn } = useCustomer();
+    const [isScrolled, setIsScrolled] = useState(false);
 
     const navItems = [
         { path: '/', icon: Home, label: 'Home' },
         { path: '/products', icon: Package, label: 'Products' },
         { path: '/cart', icon: ShoppingCart, label: 'Cart', badge: getCartCount() }
     ];
-
-    if (isAuthenticated && (user?.role === 'admin' || user?.role === 'owner')) {
-        navItems.push({ path: '/admin/dashboard', icon: LayoutDashboard, label: 'Admin' });
-    }
 
     return (
         <motion.nav
@@ -79,18 +77,20 @@ function Navbar() {
                             );
                         })}
 
-                        {/* Auth Buttons */}
-                        {isAuthenticated ? (
-                            <motion.div
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={logout}
-                                onClick={logout}
-                                className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-full glass-button transition-all"
-                            >
-                                <User size={20} />
-                                <span className="hidden sm:inline font-medium">Logout</span>
-                            </motion.div>
+                        {/* Auth/Profile Buttons */}
+                        {isLoggedIn ? (
+                            <Link to="/profile">
+                                <motion.div
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full glass-button transition-all"
+                                >
+                                    <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                                        {customer?.name?.[0]?.toUpperCase()}
+                                    </div>
+                                    <span className="hidden sm:inline font-medium">Profile</span>
+                                </motion.div>
+                            </Link>
                         ) : (
                             <Link to="/auth">
                                 <motion.div

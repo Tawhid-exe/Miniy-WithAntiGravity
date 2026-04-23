@@ -23,8 +23,10 @@ import FeaturedProducts from '../components/FeaturedProducts';
 function Home() {
     const navigate = useNavigate();
 
-    // Select featured products for hero cards
-    const featuredProducts = products.slice(0, 3);
+    // Scroll to top on mount
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     return (
         <PageTransition>

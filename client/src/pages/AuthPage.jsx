@@ -1,215 +1,158 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCustomer } from '../context/CustomerContext';
+import { Eye, EyeOff, User, Mail, Lock, Phone, MapPin, Sparkles } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
-import { Eye, EyeOff } from 'lucide-react';
 
-const AuthPage = () => {
-    const [isLogin, setIsLogin] = useState(true);
-    const { login, register, isAuthenticated, error, clearErrors } = useAuth();
+function InputField({ icon: Icon, label, type = 'text', value, onChange, placeholder, required, extra }) {
+    const [showPw, setShowPw] = useState(false);
+    const isPassword = type === 'password';
+    return (
+        <div>
+            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">{label}</label>
+            <div className="relative">
+                <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                    type={isPassword ? (showPw ? 'text' : 'password') : type}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                    required={required}
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all placeholder-gray-400 dark:placeholder-slate-500"
+                />
+                {isPassword && (
+                    <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function AuthPage() {
     const navigate = useNavigate();
-    const [showPassword, setShowPassword] = useState(false);
+    const [searchParams] = useSearchParams();
+    const { login, register, loading, error, clearError } = useCustomer();
 
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
-    });
-
-    const { name, email, password, confirmPassword } = formData;
+    const [mode, setMode] = useState('login'); // 'login' | 'register'
+    const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', address: '' });
     const [localError, setLocalError] = useState('');
+    const [success, setSuccess] = useState('');
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigate('/');
-        }
-        if (error) {
-            setLocalError(error);
-            setTimeout(() => {
-                clearErrors();
-                setLocalError('');
-            }, 3000);
-        }
-    }, [isAuthenticated, error, navigate, clearErrors]);
+    const redirect = searchParams.get('redirect') || '';
+    const set = (field) => (e) => { setForm(f => ({ ...f, [field]: e.target.value })); setLocalError(''); clearError(); };
 
-    const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-    const onSubmit = async e => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!isLogin && password !== confirmPassword) {
-            setLocalError("Passwords do not match");
-            setTimeout(() => setLocalError(''), 3000);
-            return;
-        }
-
+        setLocalError(''); setSuccess('');
         try {
-            if (isLogin) {
-                await login(email, password);
+            if (mode === 'login') {
+                await login({ email: form.email, password: form.password });
+                navigate(redirect ? `/${redirect}` : '/');
             } else {
-                await register(formData);
+                if (!form.name || !form.email || !form.password || !form.phone) {
+                    setLocalError('Please fill in all required fields.'); return;
+                }
+                await register(form);
+                setSuccess('Account created! Welcome to Miniy ✦');
+                setTimeout(() => navigate(redirect ? `/${redirect}` : '/'), 1200);
             }
         } catch (err) {
-            // Error handled by context
+            setLocalError(err.message || 'Something went wrong');
         }
     };
 
-    const inputClasses = "w-full pl-10 pr-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder-gray-400 text-gray-800 dark:text-white backdrop-blur-sm";
+    const switchMode = () => {
+        setMode(m => m === 'login' ? 'register' : 'login');
+        setLocalError(''); setSuccess(''); clearError();
+    };
+
+    const displayError = localError || error;
 
     return (
         <PageTransition>
-            <div className="flex justify-center items-center min-h-[calc(100vh-80px)]">
+            <div className="min-h-screen flex items-center justify-center px-4 py-12">
+                <div className="w-full max-w-md">
+                    {/* Brand */}
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 mb-4 shadow-lg shadow-purple-500/30">
+                            <Sparkles className="text-white" size={28} />
+                        </div>
+                        <h1 className="text-3xl font-bold text-gradient">
+                            {mode === 'login' ? 'Welcome back' : 'Create account'}
+                        </h1>
+                        <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
+                            {mode === 'login' ? 'Sign in to your Miniy account' : 'Start shopping with Miniy today'}
+                        </p>
+                    </div>
 
-                <div className="relative w-full max-w-md mx-4">
                     <motion.div
-                        layout
-                        transition={{ layout: { duration: 0.3, type: "spring", stiffness: 100, damping: 20 } }}
-                        className="relative glass-card p-8 overflow-hidden"
+                        key={mode}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="glass-card rounded-3xl p-8"
                     >
-                        <motion.div
-                            layout="position"
-                            className="text-center mb-8"
-                        >
-                            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400">
-                                {isLogin ? 'Welcome Back' : 'Join Us'}
-                            </h2>
-                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                {isLogin ? 'Sign in to confirm your order' : 'Start your journey with us today'}
-                            </p>
-                        </motion.div>
-
-                        <form className="space-y-5" onSubmit={onSubmit}>
-                            <AnimatePresence initial={false}>
-                                {!isLogin && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                        animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
-                                        exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="overflow-hidden"
-                                    >
-                                        <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                            </span>
-                                            <input
-                                                id="name"
-                                                name="name"
-                                                type="text"
-                                                required={!isLogin}
-                                                className={inputClasses}
-                                                placeholder="Full Name"
-                                                value={name}
-                                                onChange={onChange}
-                                            />
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            <div>
-                                <div className="relative">
-                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                    </span>
-                                    <input
-                                        id="email-address"
-                                        name="email"
-                                        type="email"
-                                        required
-                                        className={inputClasses}
-                                        placeholder="Email Address"
-                                        value={email}
-                                        onChange={onChange}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="relative">
-                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                    </span>
-                                    <input
-                                        id="password"
-                                        name="password"
-                                        type={showPassword ? "text" : "password"}
-                                        required
-                                        className={inputClasses}
-                                        placeholder="Password"
-                                        value={password}
-                                        onChange={onChange}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-purple-600 transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <AnimatePresence initial={false}>
-                                {!isLogin && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                                        animate={{ opacity: 1, height: "auto", marginTop: 20 }}
-                                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="overflow-hidden"
-                                    >
-                                        <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                            </span>
-                                            <input
-                                                id="confirmPassword"
-                                                name="confirmPassword"
-                                                type={showPassword ? "text" : "password"}
-                                                required={!isLogin}
-                                                className={inputClasses}
-                                                placeholder="Confirm Password"
-                                                value={confirmPassword}
-                                                onChange={onChange}
-                                            />
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            {localError && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="p-3 rounded-lg bg-red-50 text-red-500 text-sm text-center border border-red-100"
+                        {/* Tabs */}
+                        <div className="flex bg-gray-100 dark:bg-slate-800 rounded-xl p-1 mb-6">
+                            {['login', 'register'].map(m => (
+                                <button
+                                    key={m}
+                                    onClick={() => { setMode(m); setLocalError(''); setSuccess(''); clearError(); }}
+                                    className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all capitalize ${
+                                        mode === m
+                                            ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm'
+                                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white'
+                                    }`}
                                 >
-                                    {localError}
+                                    {m === 'login' ? 'Sign In' : 'Register'}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Error/Success */}
+                        <AnimatePresence mode="wait">
+                            {displayError && (
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                                    className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+                                    {displayError}
                                 </motion.div>
                             )}
+                            {success && (
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                                    className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 text-sm">
+                                    {success}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                            <motion.button
-                                layout
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {mode === 'register' && (
+                                <InputField icon={User} label="Full Name *" value={form.name} onChange={set('name')} placeholder="Your name" required />
+                            )}
+                            <InputField icon={Mail} label="Email *" type="email" value={form.email} onChange={set('email')} placeholder="your@email.com" required />
+                            <InputField icon={Lock} label="Password *" type="password" value={form.password} onChange={set('password')} placeholder="••••••••" required />
+                            {mode === 'register' && (
+                                <>
+                                    <InputField icon={Phone} label="Phone / WhatsApp *" value={form.phone} onChange={set('phone')} placeholder="+880 1XXX-XXXXXX" required />
+                                    <InputField icon={MapPin} label="Delivery Address" value={form.address} onChange={set('address')} placeholder="Your address (optional)" />
+                                </>
+                            )}
+
+                            <button
                                 type="submit"
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all"
+                                disabled={loading}
+                                className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-2"
                             >
-                                {isLogin ? 'Sign In' : 'Create Account'}
-                            </motion.button>
+                                {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
+                            </button>
                         </form>
 
-                        <div className="mt-8 text-center">
-                            <button
-                                className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                                onClick={() => setIsLogin(!isLogin)}
-                            >
-                                {isLogin ? (
-                                    <span>New here? <span className="text-purple-600 dark:text-purple-400 font-bold">Create an account</span></span>
-                                ) : (
-                                    <span>Already have an account? <span className="text-purple-600 dark:text-purple-400 font-bold">Sign in</span></span>
-                                )}
+                        <div className="text-center mt-5 text-sm text-gray-500 dark:text-slate-400">
+                            {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
+                            <button onClick={switchMode} className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">
+                                {mode === 'login' ? 'Register' : 'Sign In'}
                             </button>
                         </div>
                     </motion.div>
@@ -217,6 +160,6 @@ const AuthPage = () => {
             </div>
         </PageTransition>
     );
-};
+}
 
 export default AuthPage;

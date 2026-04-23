@@ -6,6 +6,8 @@ import { useState } from 'react';
 
 import PageTransition from '../components/PageTransition';
 
+const fmt = (n) => '৳' + Number(n || 0).toLocaleString('en-IN');
+
 function Cart() {
     const { cartItems, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
     const navigate = useNavigate();
@@ -21,11 +23,11 @@ function Cart() {
                         className="text-center glass-card p-12 rounded-3xl max-w-lg w-full"
                     >
                         <ShoppingBag className="mx-auto mb-4 text-gray-400 dark:text-slate-500" size={80} />
-                        <h1 className="text-4xl font-bold text-light-text dark:text-light mb-4">Your Cart is Empty</h1>
-                        <p className="text-light-text-muted dark:text-slate-400 mb-8">Add some amazing products to get started!</p>
+                        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Your Cart is Empty</h1>
+                        <p className="text-gray-500 dark:text-slate-400 mb-8">Add some amazing products to get started!</p>
                         <button
                             onClick={() => navigate('/products')}
-                            className="bg-gradient-to-r from-light-primary to-light-secondary dark:from-primary dark:to-secondary !text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg transition-all"
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all cursor-pointer"
                         >
                             Shop Now
                         </button>
@@ -48,7 +50,7 @@ function Cart() {
 
                         <button
                             onClick={() => setShowClearConfirm(true)}
-                            className="px-4 py-2 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-transparent hover:border-red-200 dark:hover:border-red-900/30"
+                            className="px-4 py-2 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-transparent hover:border-red-200 dark:hover:border-red-900/30 cursor-pointer"
                         >
                             Clear Cart
                         </button>
@@ -63,7 +65,7 @@ function Cart() {
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     onClick={() => setShowClearConfirm(false)}
-                                    className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                                    className="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"
                                 />
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -81,7 +83,7 @@ function Cart() {
                                     <div className="flex gap-3 justify-center">
                                         <button
                                             onClick={() => setShowClearConfirm(false)}
-                                            className="px-5 py-2 rounded-full font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                            className="px-5 py-2 rounded-full font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                                         >
                                             Cancel
                                         </button>
@@ -90,7 +92,7 @@ function Cart() {
                                                 clearCart();
                                                 setShowClearConfirm(false);
                                             }}
-                                            className="px-5 py-2 rounded-full font-medium text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all"
+                                            className="px-5 py-2 rounded-full font-medium text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all cursor-pointer"
                                         >
                                             Yes, Clear It
                                         </button>
@@ -105,7 +107,10 @@ function Cart() {
                         {/* Cart Items */}
                         <div className="md:col-span-2 space-y-4">
                             <AnimatePresence mode="popLayout">
-                                {cartItems.map((item) => (
+                                {cartItems.map((item) => {
+                                    const effectivePrice = item.isOnSale ? (item.salePrice || item.price) : item.price;
+                                    
+                                    return (
                                     <motion.div
                                         key={item.id}
                                         layout
@@ -116,23 +121,23 @@ function Cart() {
                                     >
                                         {/* Product Image */}
                                         <img
-                                            src={item.image}
+                                            src={item.images?.[0] || 'https://placehold.co/400x300/1a1a2e/c9a853?text=Miniy'}
                                             alt={item.name}
                                             className="w-24 h-24 object-cover rounded-xl"
                                         />
 
                                         {/* Product Info */}
                                         <div className="flex-1">
-                                            <h3 className="text-lg font-semibold text-light-text dark:text-light mb-1">{item.name}</h3>
-                                            <p className="text-light-text-muted dark:text-slate-400 text-sm mb-2">{item.category}</p>
-                                            <p className="text-light-primary dark:text-primary font-bold">${item.price}</p>
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{item.name}</h3>
+                                            <p className="text-gray-500 dark:text-slate-400 text-sm mb-2">{item.category}</p>
+                                            <p className="text-purple-600 dark:text-purple-400 font-bold">{fmt(effectivePrice)}</p>
                                         </div>
 
                                         {/* Quantity Controls */}
                                         <div className="flex flex-col items-end justify-between">
                                             <button
                                                 onClick={() => removeFromCart(item.id)}
-                                                className="p-2 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                                                className="p-2 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer"
                                             >
                                                 <Trash2 size={18} />
                                             </button>
@@ -140,21 +145,22 @@ function Cart() {
                                             <div className="flex items-center gap-2 bg-white/50 dark:bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 border border-slate-200 dark:border-white/10">
                                                 <button
                                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/10 transition-all"
+                                                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/10 transition-all cursor-pointer"
                                                 >
                                                     <Minus size={16} />
                                                 </button>
-                                                <span className="text-light-text dark:text-light font-bold w-6 text-center">{item.quantity}</span>
+                                                <span className="text-gray-900 dark:text-white font-bold w-6 text-center">{item.quantity}</span>
                                                 <button
                                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                    className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary text-white shadow-md hover:shadow-lg hover:scale-105 transition-all"
+                                                    className="w-8 h-8 rounded-full flex items-center justify-center bg-purple-600 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer"
                                                 >
                                                     <Plus size={16} />
                                                 </button>
                                             </div>
                                         </div>
                                     </motion.div>
-                                ))}
+                                    );
+                                })}
                             </AnimatePresence>
                         </div>
 
@@ -164,30 +170,33 @@ function Cart() {
                             animate={{ opacity: 1, x: 0 }}
                             className="glass-card rounded-2xl p-6 h-fit sticky top-4"
                         >
-                            <h2 className="text-2xl font-bold text-light-text dark:text-light mb-6">Order Summary</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Order Summary</h2>
 
                             <div className="space-y-3 mb-6">
-                                <div className="flex justify-between text-light-text dark:text-slate-300">
+                                <div className="flex justify-between text-gray-700 dark:text-slate-300">
                                     <span>Subtotal</span>
-                                    <span>${getCartTotal().toFixed(2)}</span>
+                                    <span>{fmt(getCartTotal())}</span>
                                 </div>
-                                <div className="flex justify-between text-light-text dark:text-slate-300">
+                                <div className="flex justify-between text-gray-700 dark:text-slate-300">
                                     <span>Shipping</span>
                                     <span className="text-green-500">Free</span>
                                 </div>
-                                <div className="border-t border-gray-300 dark:border-slate-700 pt-3 flex justify-between text-xl font-bold text-light-text dark:text-light">
+                                <div className="border-t border-gray-300 dark:border-slate-700 pt-3 flex justify-between text-xl font-bold text-gray-900 dark:text-white">
                                     <span>Total</span>
-                                    <span className="text-gradient">${getCartTotal().toFixed(2)}</span>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">{fmt(getCartTotal())}</span>
                                 </div>
                             </div>
 
-                            <button className="w-full bg-gradient-to-r from-light-primary to-light-secondary dark:from-primary dark:to-secondary !text-white py-3 rounded-full font-semibold hover:shadow-lg transition-all mb-3">
-                                Checkout
+                            <button
+                                onClick={() => navigate('/checkout')}
+                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all mb-3 cursor-pointer"
+                            >
+                                Proceed to Checkout
                             </button>
 
                             <button
                                 onClick={() => navigate('/products')}
-                                className="w-full glass text-light-text dark:text-slate-300 hover:text-light-primary dark:hover:text-white py-3 rounded-full font-semibold transition-all"
+                                className="w-full glass text-gray-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-white py-3 rounded-full font-semibold transition-all cursor-pointer border border-transparent hover:border-purple-200 dark:hover:border-purple-900/30"
                             >
                                 Continue Shopping
                             </button>

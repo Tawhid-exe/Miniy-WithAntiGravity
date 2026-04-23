@@ -1,118 +1,200 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import api from '../api/axios';
+import { fetchProductsWithStock } from '../services/sheets';
+import { useCart } from '../context/CartContext';
+import { ShoppingCart, Star, Tag } from 'lucide-react';
 
-const FeaturedProducts = () => {
-    const navigate = useNavigate();
+const fmt = (n) => '৳' + Number(n || 0).toLocaleString('en-IN');
+
+const cardVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: { delay: i * 0.1, duration: 0.5, ease: "easeOut" }
+    }),
+    hover: { y: -10, transition: { duration: 0.3 } }
+};
+
+function FeaturedProducts() {
     const [products, setProducts] = useState([]);
-    const [activeIndex, setActiveIndex] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const { addToCart } = useCart();
+    const [addedItems, setAddedItems] = useState(new Set());
 
     useEffect(() => {
-        const fetchFeatured = async () => {
+        const load = async () => {
             try {
-                // Fetch random or top rated products. For now, just getting 5 random ones.
-                const { data } = await api.get('/products?limit=5');
-                // Since our API currently paginates to 8, we can just take the first 5 or randomize
-                if (data.products) {
-                    setProducts(data.products.slice(0, 5));
-                }
+                // Fetch all and pick top 4 interesting ones
+                const all = await fetchProductsWithStock();
+                const active = all.filter(p => p.active);
+                // Prefer items on sale, then items in stock
+                const sorted = active.sort((a, b) => {
+                    if (a.isOnSale && !b.isOnSale) return -1;
+                    if (!a.isOnSale && b.isOnSale) return 1;
+                    if (a.inStock && !b.inStock) return -1;
+                    if (!a.inStock && b.inStock) return 1;
+                    return 0; // Just keep order
+                });
+                setProducts(sorted.slice(0, 4));
             } catch (error) {
-                console.error("Failed to load featured products");
+                console.error("Failed to load featured products:", error);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchFeatured();
+        load();
     }, []);
 
-    const nextSlide = () => {
-        setActiveIndex((prev) => (prev + 1) % products.length);
+    const handleAddToCart = (e, product) => {
+        e.stopPropagation();
+        if(!product.inStock) return;
+        addToCart(product);
+        setAddedItems(prev => new Set([...prev, product.id]));
+        setTimeout(() => {
+            setAddedItems(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(product.id);
+                return newSet;
+            });
+        }, 1500);
     };
 
-    const prevSlide = () => {
-        setActiveIndex((prev) => (prev - 1 + products.length) % products.length);
-    };
+    if (loading) {
+        return (
+            <section className="py-24 relative overflow-hidden">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <div className="h-10 w-64 bg-gray-200 dark:bg-slate-800 rounded mx-auto mb-4 animate-pulse" />
+                        <div className="h-4 w-48 bg-gray-200 dark:bg-slate-800 rounded mx-auto animate-pulse" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="h-96 rounded-2xl bg-gray-200 dark:bg-slate-800 animate-pulse" />
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     if (products.length === 0) return null;
 
     return (
-        <section className="py-20 px-4 relative overflow-hidden">
-            <div className="max-w-7xl mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    className="text-center mb-16"
-                >
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gradient">Featured Collection</h2>
-                    <p className="text-gray-500 dark:text-gray-400">Handpicked premium items just for you</p>
-                </motion.div>
-
-                <div className="relative h-[400px] md:h-[500px] flex items-center justify-centerperspective-1000">
-                    <AnimatePresence mode="popLayout">
-                        {products.map((product, index) => {
-                            // Calculate position relative to active index
-                            let offset = (index - activeIndex + products.length) % products.length;
-                            if (offset > products.length / 2) offset -= products.length;
-
-                            // Only show 3 items: center, left, right
-                            if (Math.abs(offset) > 1) return null;
-
-                            return (
-                                <motion.div
-                                    key={product._id}
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.8, x: offset * 100 }}
-                                    animate={{
-                                        opacity: Math.abs(offset) === 0 ? 1 : 0.6,
-                                        scale: Math.abs(offset) === 0 ? 1 : 0.85,
-                                        x: offset * (window.innerWidth > 768 ? 350 : 280), // Distance between cards
-                                        zIndex: Math.abs(offset) === 0 ? 10 : 5,
-                                        rotateY: offset * -15 // 3D rotation effect
-                                    }}
-                                    exit={{ opacity: 0, scale: 0.5 }}
-                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    onClick={() => offset === 0 && navigate(`/product/${product._id}`)}
-                                    className={`absolute w-72 md:w-96 rounded-3xl glass-card overflow-hidden cursor-pointer shadow-2xl ${offset === 0 ? 'border-2 border-purple-500/30' : ''}`}
-                                >
-                                    <div className="h-48 md:h-64 relative bg-gray-100 dark:bg-slate-800">
-                                        <img
-                                            src={product.images?.[0]?.url || "https://placeholder.com/img.jpg"}
-                                            alt={product.name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                        <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/60 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                                            <Star size={12} className="text-yellow-500 fill-yellow-500" />
-                                            {product.ratings || 4.5}
-                                        </div>
-                                    </div>
-                                    <div className="p-6">
-                                        <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white line-clamp-1">{product.name}</h3>
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
-                                                ${product.price}
-                                            </span>
-                                            <button className="px-4 py-2 rounded-full bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700 transition-colors">
-                                                View
-                                            </button>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            );
-                        })}
-                    </AnimatePresence>
-
-                    {/* Controls */}
-                    <button onClick={prevSlide} className="absolute left-4 md:left-20 z-20 p-3 rounded-full glass hover:bg-white/10 transition-colors">
-                        <ChevronLeft size={24} className="text-gray-800 dark:text-white" />
-                    </button>
-                    <button onClick={nextSlide} className="absolute right-4 md:right-20 z-20 p-3 rounded-full glass hover:bg-white/10 transition-colors">
-                        <ChevronRight size={24} className="text-gray-800 dark:text-white" />
-                    </button>
+        <section className="py-24 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 relative z-10">
+                <div className="text-center mb-16 relative">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-light-primary/10 dark:bg-primary/20 text-light-primary dark:text-primary mb-4"
+                    >
+                        <Star size={16} className="fill-current" />
+                        <span className="font-bold text-sm tracking-widest uppercase">Featured List</span>
+                    </motion.div>
+                    <h2 className="text-4xl md:text-5xl font-bold text-light-text dark:text-light mb-4 text-gradient">
+                        Trending Now
+                    </h2>
+                    <p className="text-light-text-muted dark:text-slate-400 max-w-2xl mx-auto text-lg">
+                        Discover our most popular products handpicked just for you.
+                    </p>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {products.map((product, i) => {
+                        const isAdded = addedItems.has(product.id);
+                        return (
+                            <motion.div
+                                key={product.id}
+                                custom={i}
+                                initial="hidden"
+                                whileInView="visible"
+                                whileHover="hover"
+                                variants={cardVariants}
+                                viewport={{ once: true, margin: "-50px" }}
+                                onClick={() => navigate(`/product/${product.id}`)}
+                                className="glass-card rounded-2xl overflow-hidden cursor-pointer group flex flex-col h-full border border-gray-100 dark:border-white/10 hover:border-light-primary dark:hover:border-primary/50 transition-colors"
+                            >
+                                <div className="relative h-64 overflow-hidden bg-gray-50 dark:bg-slate-800">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <motion.img
+                                        src={product.images?.[0] || 'https://placehold.co/400x300/1a1a2e/c9a853?text=Miniy'}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover"
+                                        whileHover={{ scale: 1.1 }}
+                                        transition={{ duration: 0.6 }}
+                                    />
+                                    
+                                     {!product.inStock && (
+                                        <div className="absolute inset-0 z-20 bg-black/60 flex items-center justify-center">
+                                            <span className="text-white font-bold px-4 py-2 border-2 border-white rounded-lg text-sm tracking-wider">OUT OF STOCK</span>
+                                        </div>
+                                    )}
+
+                                    {product.isOnSale && (
+                                        <div className="absolute top-4 left-4 z-20 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                                            <Tag size={10} /> SALE
+                                        </div>
+                                    )}
+                                    <div className="absolute top-4 right-4 z-20 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-light-text dark:text-light shadow-lg">
+                                        {product.category}
+                                    </div>
+                                </div>
+
+                                <div className="p-6 flex-1 flex flex-col relative z-20 bg-white/50 dark:bg-black/20">
+                                    <h3 className="text-xl font-bold text-light-text dark:text-light mb-2 line-clamp-1 group-hover:text-light-primary dark:group-hover:text-primary transition-colors">
+                                        {product.name}
+                                    </h3>
+                                    <p className="text-light-text-muted dark:text-slate-400 text-sm mb-4 line-clamp-2 flex-grow">
+                                        {product.description}
+                                    </p>
+
+                                    <div className="flex items-center justify-between mt-auto">
+                                        <div>
+                                            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-light-primary to-light-secondary dark:from-primary dark:to-secondary">
+                                                {fmt(product.effectivePrice)}
+                                            </span>
+                                            {product.isOnSale && (
+                                                <span className="ml-2 text-sm text-gray-400 line-through">{fmt(product.price)}</span>
+                                            )}
+                                        </div>
+                                        <motion.button
+                                            disabled={!product.inStock}
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={(e) => handleAddToCart(e, product)}
+                                            className={`p-3 rounded-full transition-all shadow-lg ${
+                                                !product.inStock ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed opacity-50'
+                                                : isAdded ? 'bg-green-500 text-white shadow-green-500/30'
+                                                : 'bg-gradient-to-r from-light-primary to-light-secondary dark:from-primary dark:to-secondary text-white hover:shadow-primary/50'
+                                            }`}
+                                        >
+                                            <ShoppingCart size={18} />
+                                        </motion.button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    className="text-center mt-16"
+                >
+                    <button
+                        onClick={() => navigate('/products')}
+                        className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-gradient-to-r from-light-primary to-light-secondary dark:from-primary dark:to-secondary border border-transparent rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1"
+                    >
+                        View All Products
+                    </button>
+                </motion.div>
             </div>
         </section>
     );
-};
+}
 
 export default FeaturedProducts;

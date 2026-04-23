@@ -1,24 +1,32 @@
-import { createContext, useContext, useState } from 'react';
-import api from '../api/axios';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { submitOrder } from '../services/appsScript';
 
 const CartContext = createContext();
 
+const CART_KEY = 'miniy_cart';
+
 export const useCart = () => {
-    const context = useContext(CartContext);
-    if (!context) {
-        throw new Error('useCart must be used within CartProvider');
-    }
-    return context;
+    const ctx = useContext(CartContext);
+    if (!ctx) throw new Error('useCart must be used within CartProvider');
+    return ctx;
 };
 
 export const CartProvider = ({ children }) => {
-    const [cartItems, setCartItems] = useState([]);
+    const [cartItems, setCartItems] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+        catch { return []; }
+    });
+
+    // Persist cart to localStorage on every change
+    useEffect(() => {
+        localStorage.setItem(CART_KEY, JSON.stringify(cartItems));
+    }, [cartItems]);
 
     const addToCart = (product) => {
-        setCartItems((prev) => {
-            const existing = prev.find((item) => item.id === product.id);
+        setCartItems(prev => {
+            const existing = prev.find(item => item.id === product.id);
             if (existing) {
-                return prev.map((item) =>
+                return prev.map(item =>
                     item.id === product.id
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
@@ -29,83 +37,64 @@ export const CartProvider = ({ children }) => {
     };
 
     const removeFromCart = (productId) => {
-        setCartItems((prev) => prev.filter((item) => item.id !== productId));
+        setCartItems(prev => prev.filter(item => item.id !== productId));
     };
 
     const updateQuantity = (productId, quantity) => {
-        if (quantity <= 0) {
-            removeFromCart(productId);
-            return;
-        }
-        setCartItems((prev) =>
-            prev.map((item) =>
-                item.id === productId ? { ...item, quantity } : item
-            )
+        if (quantity <= 0) { removeFromCart(productId); return; }
+        setCartItems(prev =>
+            prev.map(item => item.id === productId ? { ...item, quantity } : item)
         );
     };
 
-    const clearCart = () => {
-        setCartItems([]);
-    };
+    const clearCart = () => setCartItems([]);
 
-    const getCartTotal = () => {
-        return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-    };
+    const getCartTotal = () =>
+        cartItems.reduce((total, item) => {
+            const price = item.isOnSale ? (item.salePrice || item.price) : item.price;
+            return total + price * item.quantity;
+        }, 0);
 
-    const getCartCount = () => {
-        return cartItems.reduce((count, item) => count + item.quantity, 0);
-    };
+    const getCartCount = () =>
+        cartItems.reduce((count, item) => count + item.quantity, 0);
 
-    const checkout = async (shippingInfo, paymentInfo = { id: "sample_payment_id", status: "succeeded" }) => {
-        try {
-            // Transform cart items to match backend Order schema
-            // Assuming item has: _id, name, price, images (array) or image (string)
-            const orderItems = cartItems.map((item) => ({
-                product: item._id || item.id,
-                name: item.name,
-                price: item.price,
-                image: item.images?.[0]?.url || item.image || "https://placeholder.com/img.jpg",
-                quantity: item.quantity,
-                costPrice: item.costPrice || 0 // Snapshot cost price
-            }));
+    // Called from Checkout page
+    const checkout = async ({ customerId, customerName, phone, address, notes }) => {
+        const items = cartItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            price: item.isOnSale ? (item.salePrice || item.price) : item.price,
+            quantity: item.quantity,
+            image: item.images?.[0] || '',
+        }));
+        const totalPrice = getCartTotal();
 
-            const itemsPrice = getCartTotal();
-            const taxPrice = 0; // consistent with current logic
-            const shippingPrice = 0; // consistent with current logic
-            const totalPrice = itemsPrice + taxPrice + shippingPrice;
+        const result = await submitOrder({
+            customerId: customerId || '',
+            customerName,
+            phone,
+            address,
+            items,
+            totalPrice,
+            notes: notes || '',
+        });
 
-            const orderData = {
-                shippingInfo,
-                orderItems,
-                paymentInfo,
-                itemsPrice,
-                taxPrice,
-                shippingPrice,
-                totalPrice,
-            };
-
-            const { data } = await api.post('/order/new', orderData);
-            clearCart(); // Clear cart on successful order
-            return data;
-        } catch (error) {
-            console.error("Checkout failed:", error);
-            throw error; // Let component handle UI feedback
-        }
+        clearCart();
+        return result;
     };
 
     return (
-        <CartContext.Provider
-            value={{
-                cartItems,
-                addToCart,
-                removeFromCart,
-                updateQuantity,
-                clearCart,
-                getCartTotal,
-                getCartCount,
-                checkout, // Expose checkout
-            }}
-        >
+        <CartContext.Provider value={{
+            cartItems,
+            addToCart,
+            removeFromCart,
+            updateQuantity,
+            clearCart,
+            getCartTotal,
+            getCartCount,
+            checkout,
+        }}>
             {children}
         </CartContext.Provider>
     );

@@ -1,47 +1,77 @@
-import { Link, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Package, ShoppingBag, LogOut, Shield } from 'lucide-react';
 
-const AdminLayout = () => {
-    const { user } = useAuth();
+function AdminLayout() {
+    const location = useLocation();
+    const navigate = useNavigate();
 
-    // Simple protection check, can be enhanced
-    if (!user || user.role === 'user') {
-        return <div className="p-10 text-center">Access Denied. Admins and Owners only.</div>;
-    }
+    const menuItems = [
+        { path: '/admin/products', icon: Package, label: 'Products' },
+        { path: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
+    ];
+
+    const handleLogout = () => {
+        sessionStorage.removeItem('miniy_admin');
+        navigate('/admin/login');
+    };
 
     return (
-        <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
-            {/* Sidebar */}
-            <aside className="w-64 bg-white dark:bg-gray-800 shadow-md">
-                <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Admin Panel</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Welcome, {user.name}</p>
-                </div>
-                <nav className="mt-6">
-                    <Link to="/admin/dashboard" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-purple-500 hover:text-white text-gray-700 dark:text-gray-200">
-                        Dashboard
-                    </Link>
-                    <Link to="/admin/products" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-purple-500 hover:text-white text-gray-700 dark:text-gray-200">
-                        Products
-                    </Link>
-                    <Link to="/admin/orders" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-purple-500 hover:text-white text-gray-700 dark:text-gray-200">
-                        Orders
-                    </Link>
-                    <Link to="/admin/customers" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-purple-500 hover:text-white text-gray-700 dark:text-gray-200">
-                        Customers
-                    </Link>
-                    <Link to="/admin/inventory" className="block py-2.5 px-4 rounded transition duration-200 hover:bg-purple-500 hover:text-white text-gray-700 dark:text-gray-200">
-                        Inventory Audit
-                    </Link>
-                </nav>
-            </aside>
+        <div className="min-h-screen bg-gray-50 dark:bg-black pt-6 px-4 pb-12">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
+                
+                {/* Sidebar */}
+                <aside className="w-full md:w-64 flex-shrink-0">
+                    <div className="glass-card rounded-2xl p-5 sticky top-24">
+                        <div className="flex items-center gap-3 mb-8 px-2">
+                            <div className="w-10 h-10 rounded-xl bg-gray-900 dark:bg-white flex items-center justify-center shadow-lg">
+                                <Shield className="text-white dark:text-gray-900" size={20} />
+                            </div>
+                            <div>
+                                <h2 className="font-bold text-gray-900 dark:text-white leading-tight">Admin Console</h2>
+                                <p className="text-xs text-green-500 font-semibold bg-green-500/10 inline-block px-2 rounded-full mt-0.5">Connected</p>
+                            </div>
+                        </div>
 
-            {/* Main Content */}
-            <main className="flex-1 p-8 overflow-y-auto">
-                <Outlet />
-            </main>
+                        <nav className="space-y-2">
+                            {menuItems.map(item => {
+                                const isActive = location.pathname.startsWith(item.path);
+                                const Icon = item.icon;
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                                            isActive
+                                                ? 'bg-purple-600 dark:bg-purple-500 text-white shadow-md shadow-purple-500/20'
+                                                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
+                                        }`}
+                                    >
+                                        <Icon size={18} />
+                                        {item.label}
+                                    </Link>
+                                );
+                            })}
+
+                            <div className="pt-4 mt-4 border-t border-gray-200 dark:border-slate-800">
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                >
+                                    <LogOut size={18} />
+                                    Sign Out
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
+                </aside>
+
+                {/* Main Content */}
+                <main className="flex-1 min-w-0">
+                    <Outlet />
+                </main>
+            </div>
         </div>
     );
-};
+}
 
 export default AdminLayout;
