@@ -1,51 +1,43 @@
-import { useState, useEffect } from 'react';
-import { useCustomer } from '../context/CustomerContext';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+﻿import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageTransition from '../components/PageTransition';
 import { Eye, EyeOff } from 'lucide-react';
 
 const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(true);
-    const { login, register, isLoggedIn, error, clearError } = useCustomer();
+    const { login, register, isAuthenticated, error, clearErrors } = useAuth();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
-
-    const redirect = searchParams.get('redirect') || '';
 
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
-        confirmPassword: '',
-        phone: '',    // Added for new logic
-        address: ''   // Added for new logic
+        confirmPassword: ''
     });
 
-    const { name, email, password, confirmPassword, phone, address } = formData;
+    const { name, email, password, confirmPassword } = formData;
     const [localError, setLocalError] = useState('');
 
     useEffect(() => {
-        if (isLoggedIn) {
-            navigate(redirect ? `/${redirect}` : '/');
+        if (isAuthenticated) {
+            navigate('/');
         }
         if (error) {
             setLocalError(error);
             setTimeout(() => {
-                clearError();
+                clearErrors();
                 setLocalError('');
             }, 3000);
         }
-    }, [isLoggedIn, error, navigate, clearError, redirect]);
+    }, [isAuthenticated, error, navigate, clearErrors]);
 
     const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const onSubmit = async e => {
         e.preventDefault();
-        setLocalError('');
-        clearError();
-
         if (!isLogin && password !== confirmPassword) {
             setLocalError("Passwords do not match");
             setTimeout(() => setLocalError(''), 3000);
@@ -54,17 +46,12 @@ const AuthPage = () => {
 
         try {
             if (isLogin) {
-                await login({ email, password });
+                await login(email, password);
             } else {
-                if (!name || !email || !password || !phone) {
-                    setLocalError("Please fill required fields (Name, Email, Password, Phone)");
-                    return;
-                }
-                await register({ name, email, password, phone, address });
+                await register(formData);
             }
         } catch (err) {
-            // Error managed by context (useCustomer), but we can catch it
-            setLocalError(err.message || "Failed to authenticate");
+            // Error handled by context
         }
     };
 
@@ -72,13 +59,13 @@ const AuthPage = () => {
 
     return (
         <PageTransition>
-            <div className="flex justify-center items-center min-h-[calc(100vh-80px)] py-12">
+            <div className="flex justify-center items-center min-h-[calc(100vh-80px)]">
 
                 <div className="relative w-full max-w-md mx-4">
                     <motion.div
                         layout
                         transition={{ layout: { duration: 0.3, type: "spring", stiffness: 100, damping: 20 } }}
-                        className="relative glass-card p-8 overflow-hidden rounded-3xl"
+                        className="relative glass-card p-8 overflow-hidden"
                     >
                         <motion.div
                             layout="position"
@@ -100,7 +87,7 @@ const AuthPage = () => {
                                         animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
                                         exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                                         transition={{ duration: 0.3 }}
-                                        className="overflow-hidden space-y-5"
+                                        className="overflow-hidden"
                                     >
                                         <div className="relative">
                                             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
@@ -114,22 +101,6 @@ const AuthPage = () => {
                                                 className={inputClasses}
                                                 placeholder="Full Name"
                                                 value={name}
-                                                onChange={onChange}
-                                            />
-                                        </div>
-
-                                        <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                                            </span>
-                                            <input
-                                                id="phone"
-                                                name="phone"
-                                                type="text"
-                                                required={!isLogin}
-                                                className={inputClasses}
-                                                placeholder="Phone (WhatsApp)"
-                                                value={phone}
                                                 onChange={onChange}
                                             />
                                         </div>
@@ -187,7 +158,7 @@ const AuthPage = () => {
                                         animate={{ opacity: 1, height: "auto", marginTop: 20 }}
                                         exit={{ opacity: 0, height: 0, marginTop: 0 }}
                                         transition={{ duration: 0.3 }}
-                                        className="overflow-hidden space-y-5"
+                                        className="overflow-hidden"
                                     >
                                         <div className="relative">
                                             <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
@@ -223,16 +194,16 @@ const AuthPage = () => {
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 type="submit"
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all cursor-pointer"
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all"
                             >
                                 {isLogin ? 'Sign In' : 'Create Account'}
                             </motion.button>
                         </form>
 
-                        <div className="mt-8 text-center pt-2">
+                        <div className="mt-8 text-center">
                             <button
-                                className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
-                                onClick={() => { setIsLogin(!isLogin); setLocalError(''); clearError(); }}
+                                className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                                onClick={() => setIsLogin(!isLogin)}
                             >
                                 {isLogin ? (
                                     <span>New here? <span className="text-purple-600 dark:text-purple-400 font-bold">Create an account</span></span>
