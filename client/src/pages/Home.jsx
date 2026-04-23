@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, Zap, Shield, Truck, Sparkles, ArrowRight } from 'lucide-react';
-import { products } from '../data/products';
+
 
 const container = {
     hidden: { opacity: 0 },
@@ -80,41 +80,6 @@ function Home() {
                             transition={{ duration: 0.8, delay: 0.2 }}
                             className="relative h-[500px] hidden lg:block"
                         >
-                            {featuredProducts.map((product, index) => (
-                                <motion.div
-                                    key={product.id}
-                                    className="absolute glass-card p-4 rounded-2xl flex items-center gap-4 w-72 cursor-pointer hover:bg-white/10 transition-colors"
-                                    style={{
-                                        top: index === 0 ? '15%' : index === 1 ? '30%' : '55%',
-                                        left: index === 0 ? '10%' : index === 1 ? '25%' : '5%',
-                                        zIndex: index === 1 ? 20 : 10,
-                                        scale: index === 1 ? 1.1 : 0.9,
-                                        filter: index === 1 ? 'blur(0px)' : 'blur(1px)' // Focus effect on center card
-                                    }}
-                                    animate={{
-                                        y: [0, -10, 0], // Gentler float
-                                    }}
-                                    transition={{
-                                        duration: 4 + index,
-                                        repeat: Infinity,
-                                        ease: "easeInOut",
-                                        delay: index * 0.5
-                                    }}
-                                    whileHover={{ scale: 1.05, zIndex: 10 }}
-                                    onClick={() => navigate(`/product/${product.id}`)}
-                                >
-                                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-slate-800">
-                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-light-text dark:text-light text-sm line-clamp-1">{product.name}</h4>
-                                        <p className="text-light-primary dark:text-primary font-bold text-sm">${product.price}</p>
-                                    </div>
-                                    <div className="ml-auto bg-light-primary/10 dark:bg-primary/20 p-2 rounded-full">
-                                        <ArrowRight size={16} className="text-light-primary dark:text-primary" />
-                                    </div>
-                                </motion.div>
-                            ))}
 
                             {/* Decorative Elements around cards */}
                             <motion.div
