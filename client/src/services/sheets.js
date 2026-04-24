@@ -26,7 +26,7 @@ export async function fetchProducts() {
     const rows = await readTab('Products');
     const now = new Date();
     return rows
-        .filter(p => p.active === 'TRUE' || p.active === true)
+        .filter(p => String(p.active).toUpperCase() === 'TRUE')
         .map(p => {
             const price = parseFloat(p.price) || 0;
             const salePrice = parseFloat(p.salePrice) || 0;
