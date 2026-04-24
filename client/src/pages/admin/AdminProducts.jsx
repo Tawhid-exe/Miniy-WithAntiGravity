@@ -16,7 +16,6 @@ function AdminProducts() {
     const [displayCategories, setDisplayCategories] = useState([]);
     const [bmsCategories, setBmsCategories] = useState([]);
     const [isCustomCategory, setIsCustomCategory] = useState(false);
-    const [isCustomBmsCategory, setIsCustomBmsCategory] = useState(false);
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -41,7 +40,9 @@ function AdminProducts() {
             setDisplayCategories(cats);
 
             const inv = await fetchInventory();
-            setBmsCategories(Object.keys(inv));
+            const bmsCats = Object.keys(inv);
+            setBmsCategories(bmsCats);
+            console.log("Loaded Categories:", { display: cats, bms: bmsCats });
         } catch (e) {
             console.error(e);
         } finally { setLoading(false); }
@@ -64,12 +65,10 @@ function AdminProducts() {
                 active: product.active !== false
             });
             setIsCustomCategory(product.category && !displayCategories.includes(product.category));
-            setIsCustomBmsCategory(bmsCat && !bmsCategories.includes(bmsCat));
         } else {
             setEditingProduct(null);
             setForm({ name: '', category: '', bmsCategory: '', description: '', price: '', salePrice: '', saleEnds: '', imageFile: null, imageUrl: '', active: true });
             setIsCustomCategory(false);
-            setIsCustomBmsCategory(false);
         }
         setShowModal(true);
     };
@@ -296,25 +295,15 @@ function AdminProducts() {
                                             <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 uppercase mb-2">BMS / Inventory Category</label>
                                             <div className="flex flex-col gap-2">
                                                 <select 
-                                                    value={isCustomBmsCategory ? '_custom_' : form.bmsCategory} 
-                                                    onChange={e => {
-                                                        if (e.target.value === '_custom_') {
-                                                            setIsCustomBmsCategory(true);
-                                                            setForm({...form, bmsCategory: ''});
-                                                        } else {
-                                                            setIsCustomBmsCategory(false);
-                                                            setForm({...form, bmsCategory: e.target.value});
-                                                        }
-                                                    }}
+                                                    value={form.bmsCategory} 
+                                                    onChange={e => setForm({...form, bmsCategory: e.target.value})}
                                                     className="w-full p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border-none ring-1 ring-gray-200 dark:ring-slate-700 focus:ring-2 focus:ring-purple-500 text-sm dark:text-white outline-none"
                                                 >
                                                     <option value="">Same as Display Category</option>
-                                                    {bmsCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                                                    <option value="_custom_">+ Add New BMS Category...</option>
+                                                    {bmsCategories.sort((a,b) => a.localeCompare(b)).map(c => (
+                                                        <option key={c} value={c}>{c}</option>
+                                                    ))}
                                                 </select>
-                                                {isCustomBmsCategory && (
-                                                    <input required value={form.bmsCategory} onChange={e => setForm({...form, bmsCategory: e.target.value})} placeholder="Type new BMS category..." className="w-full p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-none ring-1 ring-purple-300 focus:ring-2 focus:ring-purple-500 text-sm dark:text-white outline-none" />
-                                                )}
                                             </div>
                                         </div>
 

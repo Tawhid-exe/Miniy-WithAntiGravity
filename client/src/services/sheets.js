@@ -16,7 +16,10 @@ async function readTab(tabName) {
     if (!headers) return [];
     return rows.map(row => {
         const obj = {};
-        headers.forEach((h, i) => { obj[h] = row[i] ?? ''; });
+        headers.forEach((h, i) => { 
+            const key = String(h || '').trim();
+            if (key) obj[key] = row[i] ?? ''; 
+        });
         return obj;
     });
 }
@@ -65,14 +68,18 @@ export async function fetchInventory() {
 
     const inventory = {};
     categories.forEach(cat => {
+        const catClean = String(cat || '').trim();
+        if (!catClean) return;
+
         const purchases = costs
-            .filter(c => c.cat === cat && (c.type || 'purchase') === 'purchase')
-            .sort((a, b) => a.date.localeCompare(b.date));
-        const refunds = costs.filter(c => c.cat === cat && c.type === 'refund');
-        const missing = costs.filter(c => c.cat === cat && c.type === 'missing');
+            .filter(c => String(c.cat || '').trim() === catClean && String(c.type || 'purchase').toLowerCase().trim() === 'purchase')
+            .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+        
+        const refunds = costs.filter(c => String(c.cat || '').trim() === catClean && String(c.type || '').toLowerCase().trim() === 'refund');
+        const missing = costs.filter(c => String(c.cat || '').trim() === catClean && String(c.type || '').toLowerCase().trim() === 'missing');
 
         const soldQty = salesRows
-            .filter(s => s.cat === cat)
+            .filter(s => String(s.cat || '').trim() === catClean)
             .reduce((a, s) => a + (parseInt(s.qty) || 0), 0);
         const refundedQty = refunds.reduce((a, c) => a + (parseInt(c.qty) || 0), 0);
         const missingQty = missing.reduce((a, c) => a + (parseInt(c.qty) || 0), 0);
