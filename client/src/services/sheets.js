@@ -17,7 +17,7 @@ async function readTab(tabName) {
     return rows.map(row => {
         const obj = {};
         headers.forEach((h, i) => { 
-            const key = String(h || '').trim();
+            const key = String(h || '').trim().toLowerCase();
             if (key) obj[key] = row[i] ?? ''; 
         });
         return obj;
@@ -32,21 +32,21 @@ export async function fetchProducts() {
         .filter(p => String(p.active).toUpperCase() === 'TRUE')
         .map(p => {
             const price = parseFloat(p.price) || 0;
-            const salePrice = parseFloat(p.salePrice) || 0;
-            const saleEnds = p.saleEnds ? new Date(p.saleEnds) : null;
+            const salePrice = parseFloat(p.saleprice) || 0;
+            const saleEnds = p.saleends ? new Date(p.saleends) : null;
             const isOnSale = salePrice > 0 && saleEnds && saleEnds > now;
             return {
                 id: p.id,
                 name: p.name,
                 category: p.category,
-                bmsCategory: p.bmsCategory || p.category,
+                bmsCategory: p.bmscategory || p.category,
                 description: p.description,
                 price,
                 salePrice: isOnSale ? salePrice : null,
                 saleEnds: isOnSale ? saleEnds : null,
                 isOnSale,
                 effectivePrice: isOnSale ? salePrice : price,
-                images: p.images ? p.images.split(',').map(u => u.trim()).filter(Boolean) : [],
+                images: p.images ? String(p.images).split(',').map(u => u.trim()).filter(Boolean) : [],
                 active: true,
             };
         });
@@ -82,13 +82,13 @@ export async function fetchInventory() {
             .filter(s => String(s.cat || '').trim() === catClean)
             .reduce((a, s) => a + (parseInt(s.qty) || 0), 0);
         const refundedQty = refunds.reduce((a, c) => a + (parseInt(c.qty) || 0), 0);
-        const missingQty = missing.reduce((a, c) => a + (parseInt(c.qty) || 0), 0);
+        const missingQty = missing.reduce((a, c) => a + (parseInt(c.missingfrombox) || 0), 0);
 
         let toDeduct = soldQty + refundedQty + missingQty;
         let totalRemaining = 0;
 
         purchases.forEach(b => {
-            const effQty = Math.max(0, (parseInt(b.qty) || 0) - (parseInt(b.missingFromBox) || 0));
+            const effQty = Math.max(0, (parseInt(b.qty) || 0) - (parseInt(b.missingfrombox) || 0));
             const used = Math.min(toDeduct, effQty);
             toDeduct = Math.max(0, toDeduct - effQty);
             totalRemaining += effQty - used;

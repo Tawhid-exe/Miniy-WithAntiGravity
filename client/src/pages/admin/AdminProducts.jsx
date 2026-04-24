@@ -44,7 +44,8 @@ function AdminProducts() {
             setBmsCategories(bmsCats);
             console.log("Loaded Categories:", { display: cats, bms: bmsCats });
         } catch (e) {
-            console.error(e);
+            console.error("Load error:", e);
+            alert("Error loading data from Google Sheets: " + e.message);
         } finally { setLoading(false); }
     };
 
