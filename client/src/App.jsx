@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import BackgroundBlobs from './components/BackgroundBlobs';
 import Spotlight from './components/Spotlight';
+import Footer from './components/Footer';
 
 // Customer pages
 import Home from './pages/Home';
@@ -73,12 +74,15 @@ function App() {
             <CustomerProvider>
                 <CartProvider>
                     <Router>
-                        <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-black relative overflow-hidden">
+                        <div className="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-black relative overflow-hidden flex flex-col">
                             <Spotlight />
                             <BackgroundBlobs />
                             <Navbar />
-                            <div className="pt-20 relative z-10">
+                            <div className="pt-20 relative z-10 flex-1">
                                 <AnimatedRoutes />
+                            </div>
+                            <div className="relative z-20 mt-auto">
+                                <Footer />
                             </div>
                         </div>
                     </Router>

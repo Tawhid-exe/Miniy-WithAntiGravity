@@ -36,6 +36,7 @@ export async function fetchProducts() {
                 id: p.id,
                 name: p.name,
                 category: p.category,
+                bmsCategory: p.bmsCategory || p.category,
                 description: p.description,
                 price,
                 salePrice: isOnSale ? salePrice : null,
@@ -96,7 +97,7 @@ export async function fetchInventory() {
 export async function fetchProductsWithStock() {
     const [products, inventory] = await Promise.all([fetchProducts(), fetchInventory()]);
     return products.map(p => {
-        const inv = inventory[p.category] || { totalRemaining: 0 };
+        const inv = inventory[p.bmsCategory || p.category] || { totalRemaining: 0 };
         return {
             ...p,
             stock: inv.totalRemaining,
