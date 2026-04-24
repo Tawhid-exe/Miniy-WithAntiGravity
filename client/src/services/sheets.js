@@ -73,7 +73,7 @@ export async function fetchInventory() {
 
         const purchases = costs
             .filter(c => String(c.cat || '').trim() === catClean && String(c.type || 'purchase').toLowerCase().trim() === 'purchase')
-            .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+            .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
         
         const refunds = costs.filter(c => String(c.cat || '').trim() === catClean && String(c.type || '').toLowerCase().trim() === 'refund');
         const missing = costs.filter(c => String(c.cat || '').trim() === catClean && String(c.type || '').toLowerCase().trim() === 'missing');

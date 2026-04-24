@@ -32,7 +32,7 @@ function Products() {
                 const data = await fetchProductsWithStock();
                 setAllProducts(data);
             } catch (e) {
-                setError('Could not load products. Please try again.');
+                setError('Could not load products: ' + e.message);
                 console.error(e);
             } finally {
                 setLoading(false);
