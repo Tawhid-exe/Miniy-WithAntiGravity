@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomer } from '../context/CustomerContext';
 import { fetchCustomerOrders } from '../services/appsScript';
-import { User, Phone, MapPin, ShoppingBag, Edit2, Save, X, Package, CheckCircle, Truck, Clock, XCircle } from 'lucide-react';
+import { User, Phone, MapPin, ShoppingBag, Edit2, Save, X, Package, CheckCircle, Truck, Clock, XCircle, LogOut } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 
 const fmt = (n) => '৳' + Number(n || 0).toLocaleString('en-IN');
@@ -25,7 +25,7 @@ function StatusBadge({ status }) {
 }
 
 function Profile() {
-    const { customer, updateProfile, loading, error, clearError } = useCustomer();
+    const { customer, updateProfile, loading, error, clearError, logout } = useCustomer();
     const [orders, setOrders] = useState([]);
     const [ordersLoading, setOrdersLoading] = useState(true);
     const [editing, setEditing] = useState(false);
@@ -130,6 +130,9 @@ function Profile() {
                                             ) : null)}
                                             <button onClick={() => setEditing(true)} className="w-full py-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 text-sm font-medium flex items-center justify-center gap-1.5 hover:border-purple-400 hover:text-purple-500 transition-all">
                                                 <Edit2 size={13} /> Edit Profile
+                                            </button>
+                                            <button onClick={() => { logout(); window.location.href = '/'; }} className="w-full py-2 rounded-lg border border-red-200 dark:border-red-900/30 text-red-500 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all mt-2">
+                                                <LogOut size={13} /> Sign Out
                                             </button>
                                         </>
                                     )}

@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Package, ShoppingBag, LogOut, Shield } from 'lucide-react';
+import { Package, ShoppingBag, LogOut, Shield, Home } from 'lucide-react';
 
 function AdminLayout() {
     const location = useLocation();
@@ -53,6 +53,13 @@ function AdminLayout() {
                             })}
 
                             <div className="pt-4 mt-4 border-t border-gray-200 dark:border-slate-800">
+                                <Link
+                                    to="/"
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors mb-2"
+                                >
+                                    <Home size={18} />
+                                    Back to Store
+                                </Link>
                                 <button
                                     onClick={handleLogout}
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

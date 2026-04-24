@@ -18,6 +18,10 @@ function Navbar() {
         { path: '/cart', icon: ShoppingCart, label: 'Cart', badge: getCartCount() }
     ];
 
+    if (location.pathname.startsWith('/admin')) {
+        return null;
+    }
+
     return (
         <motion.nav
             initial={{ y: -100 }}
