@@ -20,7 +20,7 @@ export const CustomerProvider = ({ children }) => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     };
 
-    const login = async (email, password) => {
+    const login = async ({ email, password }) => {
         setLoading(true); setError(null);
         try {
             const data = await loginCustomer({ email, password });
