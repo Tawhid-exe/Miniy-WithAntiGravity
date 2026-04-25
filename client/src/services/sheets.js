@@ -1,27 +1,22 @@
 // ═══════════════════════════════════════════════════════════════
-//  sheets.js — Read-only Google Sheets data fetching
-//  Uses Sheets API v4 with a public API key (safe for frontend)
+//  sheets.js — Read-only data fetching via Apps Script
+//  Routes all reads through the Apps Script backend so the
+//  Google Sheet can stay private (no public API key needed)
 // ═══════════════════════════════════════════════════════════════
 
-const SHEET_ID = import.meta.env.VITE_SHEET_ID;
-const API_KEY = import.meta.env.VITE_SHEETS_API_KEY;
-const BASE = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
+const SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL;
 
+// Internal helper — mirrors appsScript.js but only for reads
 async function readTab(tabName) {
-    const url = `${BASE}/${encodeURIComponent(tabName)}?key=${API_KEY}`;
-    const res = await fetch(url);
+    const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'readTab', tabName }),
+    });
     if (!res.ok) throw new Error(`Failed to read tab "${tabName}": ${res.statusText}`);
     const data = await res.json();
-    const [headers, ...rows] = data.values || [];
-    if (!headers) return [];
-    return rows.map(row => {
-        const obj = {};
-        headers.forEach((h, i) => { 
-            const key = String(h || '').trim().toLowerCase();
-            if (key) obj[key] = row[i] ?? ''; 
-        });
-        return obj;
-    });
+    if (!data.success) throw new Error(`Failed to read tab "${tabName}": ${data.error}`);
+    return data.rows || [];
 }
 
 // ── Products ──────────────────────────────────────────────────
@@ -74,7 +69,7 @@ export async function fetchInventory() {
         const purchases = costs
             .filter(c => String(c.cat || '').trim() === catClean && String(c.type || 'purchase').toLowerCase().trim() === 'purchase')
             .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
-        
+
         const refunds = costs.filter(c => String(c.cat || '').trim() === catClean && String(c.type || '').toLowerCase().trim() === 'refund');
         const missing = costs.filter(c => String(c.cat || '').trim() === catClean && String(c.type || '').toLowerCase().trim() === 'missing');
 
