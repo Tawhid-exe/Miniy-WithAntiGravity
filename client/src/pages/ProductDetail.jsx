@@ -30,7 +30,15 @@ function ProductDetail() {
                     fetchInventory(),
                 ]);
                 if (!prod) { setError('Product not found'); return; }
-                const inv = inventory[prod.category] || { totalRemaining: 0 };
+                // Build case-insensitive inventory lookup map
+                const invLower = {};
+                Object.keys(inventory).forEach(k => {
+                    invLower[k.toLowerCase().trim()] = inventory[k];
+                });
+
+                // Use bmsCategory first, fall back to category — both case-insensitive
+                const lookupKey = (prod.bmsCategory || prod.category || '').toLowerCase().trim();
+                const inv = invLower[lookupKey] || { totalRemaining: 0 };
                 setProduct({ ...prod, stock: inv.totalRemaining, inStock: inv.totalRemaining > 0 });
             } catch (e) {
                 setError('Could not load product.');
@@ -129,7 +137,6 @@ function ProductDetail() {
                                         <span className="text-white font-bold px-4 py-2 border-2 border-white rounded-lg tracking-wider">OUT OF STOCK</span>
                                     </div>
                                 )}
-                                {/* Arrows for multiple images */}
                                 {images.length > 1 && (
                                     <>
                                         <button
@@ -143,7 +150,6 @@ function ProductDetail() {
                                     </>
                                 )}
                             </div>
-                            {/* Thumbnails */}
                             {images.length > 1 && (
                                 <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                                     {images.map((img, i) => (
@@ -172,7 +178,6 @@ function ProductDetail() {
 
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">{product.name}</h1>
 
-                            {/* Price */}
                             <div className="mb-5">
                                 <span className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
                                     {fmt(product.effectivePrice)}
@@ -189,7 +194,6 @@ function ProductDetail() {
 
                             <p className="text-gray-600 dark:text-slate-300 leading-relaxed mb-8 flex-grow">{product.description}</p>
 
-                            {/* CTA */}
                             <div className="flex gap-3">
                                 <motion.button
                                     disabled={!product.inStock}
