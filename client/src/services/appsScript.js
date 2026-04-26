@@ -1,8 +1,3 @@
-// ═══════════════════════════════════════════════════════════════
-//  appsScript.js — All write operations via Google Apps Script
-//  The Apps Script Web App acts as a free serverless backend
-// ═══════════════════════════════════════════════════════════════
-
 const SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL;
 
 async function post(action, payload = {}) {
@@ -17,58 +12,44 @@ async function post(action, payload = {}) {
     return data;
 }
 
-// ── Customer Auth ─────────────────────────────────────────────
 export async function registerCustomer({ name, email, password, phone, address }) {
     return post('register', { name, email, password, phone, address });
 }
-
 export async function loginCustomer({ email, password }) {
     return post('login', { email, password });
 }
-
 export async function fetchCustomerProfile(customerId) {
     return post('getProfile', { customerId });
 }
-
 export async function updateCustomerProfile(customerId, updates) {
     return post('updateProfile', { customerId, ...updates });
 }
-
-// ── Orders ────────────────────────────────────────────────────
 export async function submitOrder({ customerId, customerName, phone, address, items, totalPrice, notes }) {
     return post('submitOrder', { customerId, customerName, phone, address, items, totalPrice, notes });
 }
-
 export async function fetchCustomerOrders(customerId) {
     return post('getOrders', { customerId });
 }
-
-// ── Admin ─────────────────────────────────────────────────────
 export async function adminAuth(password) {
     return post('adminAuth', { password });
 }
-
 export async function adminGetOrders() {
     return post('adminGetOrders', {});
 }
-
 export async function adminUpdateOrderStatus(orderId, status) {
     return post('adminUpdateOrder', { orderId, status });
 }
-
 export async function adminAddProduct(productData) {
     return post('adminAddProduct', productData);
 }
-
 export async function adminUpdateProduct(id, updates) {
     return post('adminUpdateProduct', { id, ...updates });
 }
-
 export async function adminDeleteProduct(id) {
     return post('adminDeleteProduct', { id });
 }
 
-// ── Admin Product Reads (bypasses public Sheets API) ──────────
+// ── Fetch products for admin panel (bypasses public Sheets API) ─
 export async function adminFetchProducts() {
     const data = await post('getProducts', {});
     const now = new Date();
@@ -83,7 +64,7 @@ export async function adminFetchProducts() {
                 id: p.id,
                 name: p.name,
                 category: p.category,
-                bmsCategory: p.bmscategory || p.category,
+                bmsCategory: String(p.bmscategory || '').trim(),
                 description: p.description,
                 price,
                 salePrice: isOnSale ? salePrice : null,
@@ -92,6 +73,7 @@ export async function adminFetchProducts() {
                 effectivePrice: isOnSale ? salePrice : price,
                 images: p.images ? String(p.images).split(',').map(u => u.trim()).filter(Boolean) : [],
                 active: true,
+                quantity: parseInt(p.quantity) || 0,
             };
         });
 }
@@ -99,4 +81,11 @@ export async function adminFetchProducts() {
 export async function adminFetchBmsCategories() {
     const data = await post('getBmsCategories', {});
     return data.categories || [];
+}
+
+// Returns raw BMS inventory stock per category — source of truth
+// Does NOT change when products are added to the store
+export async function adminFetchBmsStock() {
+    const data = await post('getBmsStock', {});
+    return data.stock || {};
 }
