@@ -6,7 +6,7 @@
 
 const SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL;
 
-// Internal helper — mirrors appsScript.js but only for reads
+// Internal helper — reads any tab through Apps Script backend
 async function readTab(tabName) {
     const res = await fetch(SCRIPT_URL, {
         method: 'POST',
@@ -34,7 +34,8 @@ export async function fetchProducts() {
                 id: p.id,
                 name: p.name,
                 category: p.category,
-                bmsCategory: p.bmscategory || p.category,
+                // normalise bmsCategory: trim + use category as fallback
+                bmsCategory: String(p.bmscategory || p.category || '').trim(),
                 description: p.description,
                 price,
                 salePrice: isOnSale ? salePrice : null,
@@ -52,30 +53,48 @@ export async function fetchSingleProduct(id) {
     return products.find(p => p.id === id) || null;
 }
 
-// ── Inventory (FIFO — same logic as BMS) ─────────────────────
+// ── Inventory (FIFO) ──────────────────────────────────────────
 export async function fetchInventory() {
     const costs = await readTab('Costs');
     const salesRows = await readTab('Sales');
 
+    // Normalise helper — trim + lowercase for safe comparison
+    const norm = v => String(v || '').trim().toLowerCase();
+
+    // Collect all unique purchase categories from Costs tab
     const categories = [...new Set(
-        costs.filter(c => (c.type || 'purchase') === 'purchase').map(c => c.cat)
+        costs
+            .filter(c => {
+                const t = norm(c.type);
+                return t === '' || t === 'purchase';
+            })
+            .map(c => String(c.cat || '').trim())
+            .filter(Boolean)
     )];
 
     const inventory = {};
+
     categories.forEach(cat => {
-        const catClean = String(cat || '').trim();
-        if (!catClean) return;
+        const catNorm = norm(cat);
 
         const purchases = costs
-            .filter(c => String(c.cat || '').trim() === catClean && String(c.type || 'purchase').toLowerCase().trim() === 'purchase')
+            .filter(c => {
+                const t = norm(c.type);
+                return norm(c.cat) === catNorm && (t === '' || t === 'purchase');
+            })
             .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
-        const refunds = costs.filter(c => String(c.cat || '').trim() === catClean && String(c.type || '').toLowerCase().trim() === 'refund');
-        const missing = costs.filter(c => String(c.cat || '').trim() === catClean && String(c.type || '').toLowerCase().trim() === 'missing');
+        const refunds = costs.filter(c =>
+            norm(c.cat) === catNorm && norm(c.type) === 'refund'
+        );
+        const missing = costs.filter(c =>
+            norm(c.cat) === catNorm && norm(c.type) === 'missing'
+        );
 
         const soldQty = salesRows
-            .filter(s => String(s.cat || '').trim() === catClean)
+            .filter(s => norm(s.cat) === catNorm)
             .reduce((a, s) => a + (parseInt(s.qty) || 0), 0);
+
         const refundedQty = refunds.reduce((a, c) => a + (parseInt(c.qty) || 0), 0);
         const missingQty = missing.reduce((a, c) => a + (parseInt(c.missingfrombox) || 0), 0);
 
@@ -89,17 +108,26 @@ export async function fetchInventory() {
             totalRemaining += effQty - used;
         });
 
+        // Store with ORIGINAL cat name (not lowercased) so lookup works
         inventory[cat] = { totalRemaining, soldQty };
     });
 
     return inventory;
 }
 
-// ── Enrich products with stock data ──────────────────────────
+// ── Enrich products with stock ────────────────────────────────
 export async function fetchProductsWithStock() {
     const [products, inventory] = await Promise.all([fetchProducts(), fetchInventory()]);
+
+    // Build a lowercase → original key map so lookup is case-insensitive
+    const invLower = {};
+    Object.keys(inventory).forEach(k => {
+        invLower[k.toLowerCase().trim()] = inventory[k];
+    });
+
     return products.map(p => {
-        const inv = inventory[p.bmsCategory || p.category] || { totalRemaining: 0 };
+        const key = (p.bmsCategory || p.category || '').toLowerCase().trim();
+        const inv = invLower[key] || { totalRemaining: 0 };
         return {
             ...p,
             stock: inv.totalRemaining,
