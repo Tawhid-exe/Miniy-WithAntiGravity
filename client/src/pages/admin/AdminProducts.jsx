@@ -144,15 +144,12 @@ function AdminProducts() {
         (p.name + p.category).toLowerCase().includes(search.toLowerCase())
     );
 
-    // Available stock for the currently selected bmsCategory in the form
-    const availableForForm = form.bmsCategory
+    // Available stock for the currently selected bmsCategory in the form.
+    // getAvailableStock already excludes the current product's allocation, 
+    // so this represents the absolute maximum quantity we can allocate to THIS product.
+    const maxQty = form.bmsCategory
         ? getAvailableStock(form.bmsCategory, editingProduct?.id)
         : 0;
-
-    // Max quantity = available + what this product already holds (when editing)
-    const maxQty = editingProduct
-        ? availableForForm + (parseInt(editingProduct.quantity) || 0)
-        : availableForForm;
 
     return (
         <div className="space-y-6">
