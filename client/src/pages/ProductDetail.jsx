@@ -279,7 +279,7 @@ function ProductDetail() {
                             )}
                         </div>
 
-                        {/* Info */}
+                        {/* Info — Clean purchase-focused column */}
                         <div className="flex flex-col">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-semibold">{product.category}</span>
@@ -292,7 +292,7 @@ function ProductDetail() {
 
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">{product.name}</h1>
 
-                            <div className="mb-5">
+                            <div className="mb-6">
                                 <span className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
                                     {fmt(product.effectivePrice)}
                                 </span>
@@ -306,11 +306,7 @@ function ProductDetail() {
                                 )}
                             </div>
 
-                            <div className="mb-6 flex-grow">
-                                <ProductDescription text={product.description} />
-                            </div>
-
-                            <div className="flex gap-3">
+                            <div className="flex gap-3 mb-8">
                                 <motion.button
                                     disabled={!product.inStock}
                                     whileHover={{ scale: product.inStock ? 1.02 : 1 }}
@@ -327,8 +323,8 @@ function ProductDetail() {
                                 </motion.button>
                             </div>
 
-                            {/* Shipping & Details Section — SEO keyword injection */}
-                            <div className="mt-8 space-y-3">
+                            {/* Shipping & Details Badges */}
+                            <div className="space-y-3">
                                 <div className="flex items-center gap-3 p-3 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30">
                                     <Truck size={18} className="text-green-600 dark:text-green-400 flex-shrink-0" />
                                     <div>
@@ -351,29 +347,44 @@ function ProductDetail() {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* FAQ Section — triggers rich snippets in Google */}
-                            <details className="mt-6 group">
-                                <summary className="flex items-center justify-between cursor-pointer p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-700 dark:text-slate-300">
-                                    Frequently Asked Questions
-                                    <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
-                                </summary>
-                                <div className="mt-2 space-y-3 text-sm text-gray-600 dark:text-slate-400 p-3">
-                                    <div>
-                                        <p className="font-semibold text-gray-800 dark:text-slate-200">Is this good for daily use in Bangladesh?</p>
-                                        <p>Yes — all our products are selected for everyday durability and comfort.</p>
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-gray-800 dark:text-slate-200">How long does delivery take?</p>
-                                        <p>We deliver across Bangladesh within 3–5 working days. Cash on delivery available.</p>
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-gray-800 dark:text-slate-200">Is this the same quality as the photos?</p>
-                                        <p>Always. Our products are imported directly — no local replicas.</p>
-                                    </div>
-                                </div>
-                            </details>
                         </div>
+                    </div>
+
+                    {/* Description Section — Below image, full width */}
+                    {product.description && (
+                        <div className="mt-12 max-w-2xl">
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <Package size={18} className="text-purple-500" />
+                                Product Details
+                            </h2>
+                            <div className="p-6 rounded-2xl bg-white/50 dark:bg-slate-800/30 border border-gray-200 dark:border-slate-700/50">
+                                <ProductDescription text={product.description} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FAQ Section — Below description */}
+                    <div className="mt-8 max-w-2xl">
+                        <details className="group">
+                            <summary className="flex items-center justify-between cursor-pointer p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-700 dark:text-slate-300">
+                                Frequently Asked Questions
+                                <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
+                            </summary>
+                            <div className="mt-2 space-y-3 text-sm text-gray-600 dark:text-slate-400 p-3">
+                                <div>
+                                    <p className="font-semibold text-gray-800 dark:text-slate-200">Is this good for daily use in Bangladesh?</p>
+                                    <p>Yes — all our products are selected for everyday durability and comfort.</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-800 dark:text-slate-200">How long does delivery take?</p>
+                                    <p>We deliver across Bangladesh within 3–5 working days. Cash on delivery available.</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-800 dark:text-slate-200">Is this the same quality as the photos?</p>
+                                    <p>Always. Our products are imported directly — no local replicas.</p>
+                                </div>
+                            </div>
+                        </details>
                     </div>
                 </div>
             </div>
