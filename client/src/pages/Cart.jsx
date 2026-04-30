@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 
 import PageTransition from '../components/PageTransition';
@@ -124,15 +124,19 @@ function Cart() {
                                         className="bg-white/90 dark:bg-black/20 backdrop-blur-md border border-slate-200 dark:border-white/5 shadow-lg rounded-2xl p-4 flex gap-4"
                                     >
                                         {/* Product Image */}
-                                        <img
-                                            src={item.images?.[0] || 'https://placehold.co/400x300/1a1a2e/c9a853?text=Miniy'}
-                                            alt={item.name}
-                                            className="w-24 h-24 object-cover rounded-xl"
-                                        />
+                                        <Link to={`/product/${item.id}`} className="shrink-0 cursor-pointer">
+                                            <img
+                                                src={item.images?.[0] || 'https://placehold.co/400x300/1a1a2e/c9a853?text=Miniy'}
+                                                alt={item.name}
+                                                className="w-24 h-24 object-cover rounded-xl hover:opacity-80 transition-opacity"
+                                            />
+                                        </Link>
 
                                         {/* Product Info */}
                                         <div className="flex-1">
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{item.name}</h3>
+                                            <Link to={`/product/${item.id}`} className="cursor-pointer group">
+                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-purple-500 transition-colors">{item.name}</h3>
+                                            </Link>
                                             <p className="text-gray-500 dark:text-slate-400 text-sm mb-2">{item.category}</p>
                                             <p className="text-purple-600 dark:text-purple-400 font-bold">{fmt(effectivePrice)}</p>
                                         </div>

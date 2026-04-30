@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useCart } from '../context/CartContext';
 import { fetchSingleProduct, fetchInventory } from '../services/sheets';
-import { ShoppingCart, ChevronLeft, Tag, Package, ChevronRight, ChevronLeft as PrevImg, ZoomIn, Truck, ShieldCheck, RotateCcw, ChevronDown } from 'lucide-react';
+import { ShoppingCart, ChevronLeft, Tag, Package, ChevronRight, ChevronLeft as PrevImg, ZoomIn, Truck, ShieldCheck, RotateCcw, ChevronDown, Zap } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { ProductSkeleton } from '../components/Skeleton';
 
@@ -129,7 +129,9 @@ function ProductDetail() {
                 // Use bmsCategory first, fall back to category — both case-insensitive
                 const lookupKey = (prod.bmsCategory || prod.category || '').toLowerCase().trim();
                 const inv = invLower[lookupKey] || { totalRemaining: 0 };
-                setProduct({ ...prod, stock: inv.totalRemaining, inStock: inv.totalRemaining > 0 });
+                // Use the storefront-allocated quantity, not the raw BMS stock
+                const storefrontQty = parseInt(prod.quantity) || 0;
+                setProduct({ ...prod, stock: storefrontQty, inStock: storefrontQty > 0 });
             } catch (e) {
                 setError('Could not load product.');
             } finally { setLoading(false); }
@@ -144,13 +146,19 @@ function ProductDetail() {
         setTimeout(() => setAdded(false), 2000);
     };
 
+    const handleBuyNow = () => {
+        if (!product?.inStock) return;
+        addToCart(product);
+        navigate('/checkout');
+    };
+
     const images = product?.images?.length ? product.images : ['https://placehold.co/600x600/1a1a2e/c9a853?text=Miniy'];
 
     if (loading) return (
         <PageTransition>
-            <div className="min-h-screen py-10 px-4 max-w-5xl mx-auto">
+            <div className="min-h-screen py-10 px-4 max-w-7xl mx-auto">
                 <div className="h-8 w-24 bg-gray-200 dark:bg-slate-800 rounded mb-6 animate-pulse" />
-                <div className="grid md:grid-cols-2 gap-10">
+                <div className="grid md:grid-cols-2 gap-16">
                     <div className="aspect-square rounded-2xl bg-gray-200 dark:bg-slate-800 animate-pulse" />
                     <div className="space-y-4">
                         {[...Array(5)].map((_, i) => <div key={i} className="h-5 bg-gray-200 dark:bg-slate-800 rounded animate-pulse" style={{ width: `${80 - i * 10}%` }} />)}
@@ -219,13 +227,13 @@ function ProductDetail() {
             </AnimatePresence>
 
             <div className="min-h-screen py-8 px-4">
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     {/* Back */}
                     <button onClick={() => navigate('/products')} className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-purple-500 transition-colors mb-6">
                         <ChevronLeft size={16} /> Back to Products
                     </button>
 
-                    <div className="grid md:grid-cols-2 gap-10">
+                    <div className="grid md:grid-cols-2 gap-16">
                         {/* Image Gallery */}
                         <div>
                             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-slate-800 cursor-pointer group" onClick={() => setLightbox(true)}>
@@ -306,13 +314,29 @@ function ProductDetail() {
                                 )}
                             </div>
 
-                            <div className="flex gap-3 mb-8">
+                            <div className="space-y-3 mb-8">
+                                {/* Buy Now — above Add to Cart */}
+                                <motion.button
+                                    disabled={!product.inStock}
+                                    whileHover={{ scale: product.inStock ? 1.02 : 1 }}
+                                    whileTap={{ scale: product.inStock ? 0.98 : 1 }}
+                                    onClick={handleBuyNow}
+                                    className={`w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                                        !product.inStock ? 'bg-gray-200 dark:bg-slate-800 text-gray-400 cursor-not-allowed'
+                                        : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40'
+                                    }`}
+                                >
+                                    <Zap size={18} />
+                                    {!product.inStock ? 'Out of Stock' : 'Buy Now'}
+                                </motion.button>
+
+                                {/* Add to Cart */}
                                 <motion.button
                                     disabled={!product.inStock}
                                     whileHover={{ scale: product.inStock ? 1.02 : 1 }}
                                     whileTap={{ scale: product.inStock ? 0.98 : 1 }}
                                     onClick={handleAddToCart}
-                                    className={`flex-1 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                                    className={`w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
                                         !product.inStock ? 'bg-gray-200 dark:bg-slate-800 text-gray-400 cursor-not-allowed'
                                         : added ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
                                         : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40'

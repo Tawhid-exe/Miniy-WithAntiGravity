@@ -67,16 +67,16 @@ function Navbar() {
                                     >
                                         <Icon size={20} />
                                         <span className="hidden sm:inline font-medium">{item.label}</span>
-                                        {item.badge > 0 && (
-                                            <motion.span
-                                                initial={{ scale: 0 }}
-                                                animate={{ scale: 1 }}
-                                                className="absolute -top-2 -right-2 bg-secondary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-md"
-                                            >
-                                                {item.badge}
-                                            </motion.span>
-                                        )}
                                     </motion.div>
+                                    {item.badge > 0 && (
+                                        <motion.span
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            className="absolute -top-1 -right-2 bg-pink-500 text-white text-[10px] leading-none rounded-full min-w-[20px] h-[20px] px-1 flex items-center justify-center font-bold shadow-md z-10 pointer-events-none border-2 border-[#1a1a2e] dark:border-dark"
+                                        >
+                                            {item.badge}
+                                        </motion.span>
+                                    )}
                                 </Link>
                             );
                         })}
