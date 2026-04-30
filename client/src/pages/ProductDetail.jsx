@@ -218,13 +218,13 @@ function ProductDetail() {
             </AnimatePresence>
 
             <div className="min-h-screen py-8 px-4">
-                <div className="max-w-6xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     {/* Back */}
                     <button onClick={() => navigate('/products')} className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-purple-500 transition-colors mb-6">
                         <ChevronLeft size={16} /> Back to Products
                     </button>
 
-                    <div className="flex flex-col md:flex-row justify-center gap-16 lg:gap-24">
+                    <div className="flex flex-col md:flex-row justify-between gap-16 lg:px-8">
                         {/* Image Gallery */}
                         <div className="w-full md:w-[480px] shrink-0">
                             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-slate-800 cursor-pointer group" onClick={() => setLightbox(true)}>
