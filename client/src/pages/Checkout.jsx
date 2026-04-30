@@ -41,6 +41,10 @@ function Checkout() {
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState('');
 
+    const cartTotal = getCartTotal();
+    const shippingFee = cartTotal > 2000 ? 0 : 80;
+    const grandTotal = cartTotal + shippingFee;
+
     const [form, setForm] = useState({
         name: customer?.name || '',
         phone: customer?.phone || '',
@@ -103,7 +107,7 @@ function Checkout() {
                             <CheckCircle className="text-green-400" size={40} />
                         </motion.div>
 
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Order Placed! ✦</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Order Requested! ✦</h1>
                         <p className="text-gray-500 dark:text-slate-400 mb-8">We'll contact you soon on <strong className="text-purple-500">{form.phone}</strong> to confirm your order.</p>
 
                         <div className="glass-card rounded-2xl p-6 mb-6 text-left">
@@ -139,7 +143,7 @@ function Checkout() {
             <div className="min-h-screen py-10 px-4">
                 <div className="max-w-2xl mx-auto">
                     <h1 className="text-3xl font-bold text-gradient text-center mb-2">Checkout</h1>
-                    <p className="text-center text-gray-500 dark:text-slate-400 text-sm mb-6">{cartItems.length} item{cartItems.length !== 1 ? 's' : ''} · Total {fmt(getCartTotal())}</p>
+                    <p className="text-center text-gray-500 dark:text-slate-400 text-sm mb-6">{cartItems.length} item{cartItems.length !== 1 ? 's' : ''} · Total {fmt(cartTotal)}</p>
 
                     <StepIndicator current={step} />
 
@@ -214,12 +218,16 @@ function Checkout() {
                                     </div>
 
                                     <div className="border-t border-gray-200 dark:border-slate-700 pt-4 space-y-2 text-sm mb-5">
-                                        <div className="flex justify-between text-gray-600 dark:text-slate-300"><span>Name</span><span className="font-medium">{form.name}</span></div>
-                                        <div className="flex justify-between text-gray-600 dark:text-slate-300"><span>Phone</span><span className="font-medium">{form.phone}</span></div>
-                                        <div className="flex justify-between text-gray-600 dark:text-slate-300"><span>Delivery</span><span className="font-medium text-right max-w-[60%]">{form.address}</span></div>
+                                        <div className="flex justify-between text-gray-600 dark:text-slate-300"><span>Items Total</span><span className="font-medium">{fmt(cartTotal)}</span></div>
+                                        <div className="flex justify-between text-gray-600 dark:text-slate-300">
+                                            <span>Delivery</span>
+                                            <span className="font-medium">
+                                                {shippingFee === 0 ? <span className="text-green-500 font-bold">Free</span> : fmt(shippingFee)}
+                                            </span>
+                                        </div>
                                         <div className="flex justify-between font-bold text-gray-900 dark:text-white text-base border-t border-gray-200 dark:border-slate-700 pt-2 mt-2">
-                                            <span>Total</span>
-                                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">{fmt(getCartTotal())}</span>
+                                            <span>Grand Total</span>
+                                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">{fmt(grandTotal)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -228,20 +236,27 @@ function Checkout() {
                     </AnimatePresence>
 
                     {/* Nav buttons */}
-                    <div className="flex gap-3 mt-6">
-                        {step > 0 && (
-                            <button onClick={() => setStep(s => s - 1)} className="flex items-center gap-2 px-6 py-3 rounded-xl glass border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-white font-semibold text-sm transition-all hover:border-purple-400">
-                                <ChevronLeft size={16} /> Back
-                            </button>
-                        )}
-                        {step < 2 ? (
-                            <button onClick={next} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-purple-500/30 transition-all">
-                                Continue <ChevronRight size={16} />
-                            </button>
-                        ) : (
-                            <button onClick={submit} disabled={loading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-60">
-                                {loading ? 'Placing order...' : 'Place Order ✦'}
-                            </button>
+                    <div className="mt-6 flex flex-col gap-3">
+                        <div className="flex gap-3">
+                            {step > 0 && (
+                                <button onClick={() => setStep(s => s - 1)} className="flex items-center gap-2 px-6 py-3 rounded-xl glass border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-white font-semibold text-sm transition-all hover:border-purple-400">
+                                    <ChevronLeft size={16} /> Back
+                                </button>
+                            )}
+                            {step < 2 ? (
+                                <button onClick={next} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-purple-500/30 transition-all">
+                                    Continue <ChevronRight size={16} />
+                                </button>
+                            ) : (
+                                <button onClick={submit} disabled={loading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-60">
+                                    {loading ? 'Placing order...' : 'Place Order ✦'}
+                                </button>
+                            )}
+                        </div>
+                        {step === 2 && !customer && (
+                            <p className="text-xs text-center text-gray-500 dark:text-slate-400 mt-2">
+                                Want to track your order and access past purchase history? <button onClick={() => navigate('/login')} className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">Please Log In or Sign Up.</button>
+                            </p>
                         )}
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ShoppingBag, Zap, Shield, Truck, Sparkles, ArrowRight } from 'lucide-react';
 
 
@@ -30,6 +31,11 @@ function Home() {
 
     return (
         <PageTransition>
+            <Helmet>
+                <title>Minivy — Cute Aesthetic Bags & Accessories in Bangladesh</title>
+                <meta name="description" content="Shop imported Korean aesthetic bags, accessories & lifestyle products in Bangladesh. Cash on delivery. Free shipping over ৳2,000." />
+                <link rel="canonical" href="https://minivy.vercel.app/" />
+            </Helmet>
             <div className="min-h-screen overflow-hidden transition-colors duration-300">
                 <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
                     <div className="container mx-auto z-10 grid lg:grid-cols-2 gap-12 items-center">
@@ -98,9 +104,9 @@ function Home() {
                         <h2 className="text-3xl md:text-5xl font-bold text-center mb-10 md:mb-16 text-gradient">Why Shop With Us</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {[
-                                { icon: Zap, title: "Lightning Fast", description: "Instant product loading and smooth transitions" },
-                                { icon: Shield, title: "Secure Payments", description: "Your data is protected with enterprise-grade security" },
-                                { icon: Truck, title: "Free Shipping", description: "Free delivery on orders over $50" }
+                                { icon: Zap, title: "Curated Collection", description: "Handpicked aesthetic products imported directly from Korea" },
+                                { icon: Shield, title: "Cash on Delivery", description: "Pay when your order arrives — available across all of Bangladesh" },
+                                { icon: Truck, title: "Free Shipping", description: "Free delivery on orders over ৳2,000 all across BD" }
                             ].map((feature) => (
                                 <motion.div
                                     key={feature.title}

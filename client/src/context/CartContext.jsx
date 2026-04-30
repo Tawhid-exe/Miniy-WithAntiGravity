@@ -26,11 +26,19 @@ export const CartProvider = ({ children }) => {
         setCartItems(prev => {
             const existing = prev.find(item => item.id === product.id);
             if (existing) {
+                if (existing.quantity >= product.stock) {
+                    alert(`Sorry, only ${product.stock} items are available in stock.`);
+                    return prev;
+                }
                 return prev.map(item =>
                     item.id === product.id
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
+            }
+            if (product.stock <= 0) {
+                alert('Sorry, this item is out of stock.');
+                return prev;
             }
             return [...prev, { ...product, quantity: 1 }];
         });

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useCart } from '../context/CartContext';
 import { fetchSingleProduct, fetchInventory } from '../services/sheets';
-import { ShoppingCart, ChevronLeft, Tag, Package, ChevronRight, ChevronLeft as PrevImg, ZoomIn } from 'lucide-react';
+import { ShoppingCart, ChevronLeft, Tag, Package, ChevronRight, ChevronLeft as PrevImg, ZoomIn, Truck, ShieldCheck, RotateCcw, ChevronDown } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { ProductSkeleton } from '../components/Skeleton';
 
@@ -84,6 +85,30 @@ function ProductDetail() {
 
     return (
         <PageTransition>
+            {/* Dynamic SEO Meta Tags */}
+            <Helmet>
+                <title>{product.name} | Minivy Bangladesh</title>
+                <meta name="description" content={`${product.name} — ${product.description ? product.description.slice(0, 150) : 'Imported Korean aesthetic product available in Bangladesh. Cash on delivery.'}`} />
+                <link rel="canonical" href={`https://minivy.vercel.app/product/${id}`} />
+                <meta property="og:title" content={`${product.name} | Minivy`} />
+                <meta property="og:description" content={product.description || 'Shop this product on Minivy — imported aesthetic products delivered across Bangladesh.'} />
+                <meta property="og:image" content={images[0]} />
+                <meta property="og:url" content={`https://minivy.vercel.app/product/${id}`} />
+                <meta property="og:type" content="product" />
+                <script type="application/ld+json">{JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "name": product.name,
+                    "description": product.description || '',
+                    "image": images[0],
+                    "offers": {
+                        "@type": "Offer",
+                        "price": product.effectivePrice,
+                        "priceCurrency": "BDT",
+                        "availability": product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+                    }
+                })}</script>
+            </Helmet>
             {/* Lightbox */}
             <AnimatePresence>
                 {lightbox && (
@@ -210,6 +235,53 @@ function ProductDetail() {
                                     {!product.inStock ? 'Out of Stock' : added ? 'Added to Cart ✓' : 'Add to Cart'}
                                 </motion.button>
                             </div>
+
+                            {/* Shipping & Details Section — SEO keyword injection */}
+                            <div className="mt-8 space-y-3">
+                                <div className="flex items-center gap-3 p-3 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/30">
+                                    <Truck size={18} className="text-green-600 dark:text-green-400 flex-shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-green-700 dark:text-green-300">Free Delivery over ৳2,000</p>
+                                        <p className="text-xs text-green-600/70 dark:text-green-400/60">Cash on delivery available across all of Bangladesh</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30">
+                                    <ShieldCheck size={18} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">Quality Guaranteed</p>
+                                        <p className="text-xs text-blue-600/70 dark:text-blue-400/60">Imported directly — what you see is what you get</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800/30">
+                                    <RotateCcw size={18} className="text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">Easy Returns</p>
+                                        <p className="text-xs text-purple-600/70 dark:text-purple-400/60">Contact us within 3 days if you're not satisfied</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* FAQ Section — triggers rich snippets in Google */}
+                            <details className="mt-6 group">
+                                <summary className="flex items-center justify-between cursor-pointer p-3 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 text-sm font-semibold text-gray-700 dark:text-slate-300">
+                                    Frequently Asked Questions
+                                    <ChevronDown size={16} className="transition-transform group-open:rotate-180" />
+                                </summary>
+                                <div className="mt-2 space-y-3 text-sm text-gray-600 dark:text-slate-400 p-3">
+                                    <div>
+                                        <p className="font-semibold text-gray-800 dark:text-slate-200">Is this good for daily use in Bangladesh?</p>
+                                        <p>Yes — all our products are selected for everyday durability and comfort.</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-gray-800 dark:text-slate-200">How long does delivery take?</p>
+                                        <p>We deliver across Bangladesh within 3–5 working days. Cash on delivery available.</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-gray-800 dark:text-slate-200">Is this the same quality as the photos?</p>
+                                        <p>Always. Our products are imported directly — no local replicas.</p>
+                                    </div>
+                                </div>
+                            </details>
                         </div>
                     </div>
                 </div>

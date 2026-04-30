@@ -13,6 +13,10 @@ function Cart() {
     const navigate = useNavigate();
     const [showClearConfirm, setShowClearConfirm] = useState(false);
 
+    const cartTotal = getCartTotal();
+    const shippingFee = cartTotal > 2000 ? 0 : 80;
+    const grandTotal = cartTotal + shippingFee;
+
     if (cartItems.length === 0) {
         return (
             <PageTransition>
@@ -152,7 +156,8 @@ function Cart() {
                                                 <span className="text-gray-900 dark:text-white font-bold w-6 text-center">{item.quantity}</span>
                                                 <button
                                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                    className="w-8 h-8 rounded-full flex items-center justify-center bg-purple-600 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer"
+                                                    disabled={item.quantity >= item.stock}
+                                                    className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all ${item.quantity >= item.stock ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:shadow-lg hover:scale-105 cursor-pointer'}`}
                                                 >
                                                     <Plus size={16} />
                                                 </button>
@@ -175,15 +180,15 @@ function Cart() {
                             <div className="space-y-3 mb-6">
                                 <div className="flex justify-between text-gray-700 dark:text-slate-300">
                                     <span>Subtotal</span>
-                                    <span>{fmt(getCartTotal())}</span>
+                                    <span>{fmt(cartTotal)}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-700 dark:text-slate-300">
                                     <span>Shipping</span>
-                                    <span className="text-green-500">Free</span>
+                                    <span>{shippingFee === 0 ? <span className="text-green-500 font-bold">Free</span> : fmt(shippingFee)}</span>
                                 </div>
                                 <div className="border-t border-gray-300 dark:border-slate-700 pt-3 flex justify-between text-xl font-bold text-gray-900 dark:text-white">
                                     <span>Total</span>
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">{fmt(getCartTotal())}</span>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">{fmt(grandTotal)}</span>
                                 </div>
                             </div>
 

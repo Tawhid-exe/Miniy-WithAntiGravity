@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useCart } from '../context/CartContext';
 import { fetchProductsWithStock } from '../services/sheets';
 import { ShoppingCart, Sparkles, Search, Filter, X, Tag } from 'lucide-react';
@@ -76,6 +77,11 @@ function Products() {
 
     return (
         <PageTransition>
+            <Helmet>
+                <title>Shop Aesthetic Bags & Accessories | Minivy Bangladesh</title>
+                <meta name="description" content="Browse our full collection of imported Korean aesthetic bags, accessories & lifestyle products. Cash on delivery across Bangladesh. Free shipping over ৳2,000." />
+                <link rel="canonical" href="https://minivy.vercel.app/products" />
+            </Helmet>
             <div className="min-h-screen py-8 px-4 transition-colors duration-300">
                 <div className="max-w-7xl mx-auto">
                     {/* Header & Search */}
