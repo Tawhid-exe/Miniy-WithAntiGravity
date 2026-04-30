@@ -120,18 +120,9 @@ function ProductDetail() {
                     fetchInventory(),
                 ]);
                 if (!prod) { setError('Product not found'); return; }
-                // Build case-insensitive inventory lookup map
-                const invLower = {};
-                Object.keys(inventory).forEach(k => {
-                    invLower[k.toLowerCase().trim()] = inventory[k];
-                });
-
-                // Use bmsCategory first, fall back to category — both case-insensitive
-                const lookupKey = (prod.bmsCategory || prod.category || '').toLowerCase().trim();
-                const inv = invLower[lookupKey] || { totalRemaining: 0 };
-                // Use the storefront-allocated quantity, not the raw BMS stock
-                const storefrontQty = parseInt(prod.quantity) || 0;
-                setProduct({ ...prod, stock: storefrontQty, inStock: storefrontQty > 0 });
+                // We no longer override stock with BMS inventory. 
+                // prod.stock already contains the storefront allocated quantity from sheets.js
+                setProduct(prod);
             } catch (e) {
                 setError('Could not load product.');
             } finally { setLoading(false); }
@@ -156,9 +147,9 @@ function ProductDetail() {
 
     if (loading) return (
         <PageTransition>
-            <div className="min-h-screen py-10 px-4 max-w-7xl mx-auto">
+            <div className="min-h-screen py-10 px-4 max-w-5xl mx-auto">
                 <div className="h-8 w-24 bg-gray-200 dark:bg-slate-800 rounded mb-6 animate-pulse" />
-                <div className="grid md:grid-cols-2 gap-16">
+                <div className="grid md:grid-cols-2 gap-10">
                     <div className="aspect-square rounded-2xl bg-gray-200 dark:bg-slate-800 animate-pulse" />
                     <div className="space-y-4">
                         {[...Array(5)].map((_, i) => <div key={i} className="h-5 bg-gray-200 dark:bg-slate-800 rounded animate-pulse" style={{ width: `${80 - i * 10}%` }} />)}
@@ -227,13 +218,13 @@ function ProductDetail() {
             </AnimatePresence>
 
             <div className="min-h-screen py-8 px-4">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-5xl mx-auto">
                     {/* Back */}
                     <button onClick={() => navigate('/products')} className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-purple-500 transition-colors mb-6">
                         <ChevronLeft size={16} /> Back to Products
                     </button>
 
-                    <div className="grid md:grid-cols-2 gap-16">
+                    <div className="grid md:grid-cols-2 gap-10">
                         {/* Image Gallery */}
                         <div>
                             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-slate-800 cursor-pointer group" onClick={() => setLightbox(true)}>
