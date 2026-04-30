@@ -218,15 +218,15 @@ function ProductDetail() {
             </AnimatePresence>
 
             <div className="min-h-screen py-8 px-4">
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-6xl mx-auto">
                     {/* Back */}
                     <button onClick={() => navigate('/products')} className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-purple-500 transition-colors mb-6">
                         <ChevronLeft size={16} /> Back to Products
                     </button>
 
-                    <div className="grid md:grid-cols-2 gap-10">
+                    <div className="flex flex-col md:flex-row justify-center gap-16 lg:gap-24">
                         {/* Image Gallery */}
-                        <div>
+                        <div className="w-full md:w-[480px] shrink-0">
                             <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-slate-800 cursor-pointer group" onClick={() => setLightbox(true)}>
                                 <AnimatePresence mode="wait">
                                     <motion.img
@@ -279,7 +279,7 @@ function ProductDetail() {
                         </div>
 
                         {/* Info — Clean purchase-focused column */}
-                        <div className="flex flex-col">
+                        <div className="w-full md:w-[480px] shrink-0 flex flex-col">
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs font-semibold">{product.category}</span>
                                 {product.inStock ? (
@@ -314,7 +314,7 @@ function ProductDetail() {
                                     onClick={handleBuyNow}
                                     className={`w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
                                         !product.inStock ? 'bg-gray-200 dark:bg-slate-800 text-gray-400 cursor-not-allowed'
-                                        : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40'
+                                        : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg hover:shadow-xl'
                                     }`}
                                 >
                                     <Zap size={18} />
