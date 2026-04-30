@@ -10,6 +10,95 @@ import { ProductSkeleton } from '../components/Skeleton';
 
 const fmt = (n) => '৳' + Number(n || 0).toLocaleString('en-IN');
 
+// Smart description renderer — parses structured text from Google Sheets into clean UI
+function ProductDescription({ text }) {
+    if (!text) return null;
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const rendered = [];
+    let i = 0;
+    while (i < lines.length) {
+        const line = lines[i];
+        // FAQ block — Q: ... A: ...
+        if (line.startsWith('Q:') || line.startsWith('FAQ:')) {
+            // Collect all FAQ lines
+            const faqItems = [];
+            // skip a bare 'FAQ:' header line
+            if (line === 'FAQ:') { i++; continue; }
+            const qa = line.replace(/^Q:/, '').split(' A: ');
+            if (qa.length === 2) faqItems.push({ q: qa[0].trim(), a: qa[1].trim() });
+            rendered.push(
+                <div key={i} className="mt-1">
+                    <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">FAQ</p>
+                    <div className="space-y-1.5">
+                        {faqItems.map((item, idx) => (
+                            <div key={idx} className="text-xs">
+                                <span className="font-semibold text-gray-700 dark:text-slate-200">Q: {item.q} </span>
+                                <span className="text-gray-500 dark:text-slate-400">A: {item.a}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+            i++;
+            continue;
+        }
+        // Bullet point
+        if (line.startsWith('•') || line.startsWith('-') || line.startsWith('*')) {
+            const bullets = [];
+            while (i < lines.length && (lines[i].startsWith('•') || lines[i].startsWith('-') || lines[i].startsWith('*'))) {
+                bullets.push(lines[i].replace(/^[•\-\*]\s*/, ''));
+                i++;
+            }
+            rendered.push(
+                <ul key={i} className="space-y-1 my-2">
+                    {bullets.map((b, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-600 dark:text-slate-300">
+                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0" />
+                            {b}
+                        </li>
+                    ))}
+                </ul>
+            );
+            continue;
+        }
+        // Spec line: Color: ... | Size: ... | Material: ...
+        if (line.includes('Color:') || line.includes('Size:') || line.includes('Material:')) {
+            const specs = line.split('|').map(s => s.trim()).filter(Boolean);
+            rendered.push(
+                <div key={i} className="flex flex-wrap gap-2 my-2">
+                    {specs.map((s, idx) => (
+                        <span key={idx} className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-xs text-gray-600 dark:text-slate-300 font-medium">{s}</span>
+                    ))}
+                </div>
+            );
+            i++;
+            continue;
+        }
+        // "What makes it special:" section header
+        if (line.toLowerCase().startsWith('what makes')) {
+            rendered.push(
+                <p key={i} className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mt-3 mb-1">{line.replace(':', '')}</p>
+            );
+            i++;
+            continue;
+        }
+        // Hook / first line — render slightly larger
+        if (i === 0) {
+            rendered.push(
+                <p key={i} className="text-sm font-medium text-gray-700 dark:text-slate-200 leading-relaxed mb-2">{line}</p>
+            );
+            i++;
+            continue;
+        }
+        // Everything else — normal paragraph
+        rendered.push(
+            <p key={i} className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{line}</p>
+        );
+        i++;
+    }
+    return <div className="space-y-1">{rendered}</div>;
+}
+
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -217,7 +306,9 @@ function ProductDetail() {
                                 )}
                             </div>
 
-                            <p className="text-gray-600 dark:text-slate-300 leading-relaxed mb-8 flex-grow">{product.description}</p>
+                            <div className="mb-6 flex-grow">
+                                <ProductDescription text={product.description} />
+                            </div>
 
                             <div className="flex gap-3">
                                 <motion.button
