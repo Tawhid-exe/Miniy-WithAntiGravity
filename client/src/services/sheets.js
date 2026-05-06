@@ -84,7 +84,8 @@ export async function fetchInventory() {
             .filter(c => { const t = norm(c.type); return norm(c.cat) === catNorm && (t === '' || t === 'purchase'); })
             .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
 
-        const soldQty = salesRows.filter(s => norm(s.cat) === catNorm).reduce((a, s) => a + (parseInt(s.qty) || 0), 0);
+        // Exclude cancelled orders from the sold count
+        const soldQty = salesRows.filter(s => norm(s.cat) === catNorm && norm(s.status) !== 'cancelled').reduce((a, s) => a + (parseInt(s.qty) || 0), 0);
         const refundedQty = costs.filter(c => norm(c.cat) === catNorm && norm(c.type) === 'refund').reduce((a, c) => a + (parseInt(c.qty) || 0), 0);
         const missingQty = costs.filter(c => norm(c.cat) === catNorm && norm(c.type) === 'missing').reduce((a, c) => a + (parseInt(c.missingfrombox) || 0), 0);
 

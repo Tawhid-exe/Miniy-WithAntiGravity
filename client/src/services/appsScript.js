@@ -36,8 +36,8 @@ export async function adminAuth(password) {
 export async function adminGetOrders() {
     return post('adminGetOrders', {});
 }
-export async function adminUpdateOrderStatus(orderId, status) {
-    return post('adminUpdateOrder', { orderId, status });
+export async function adminUpdateOrderStatus(orderId, status, items = []) {
+    return post('adminUpdateOrder', { orderId, status, items });
 }
 export async function adminAddProduct(productData) {
     return post('adminAddProduct', productData);

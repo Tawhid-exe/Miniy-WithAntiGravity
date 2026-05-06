@@ -51,7 +51,16 @@ export const CartProvider = ({ children }) => {
     const updateQuantity = (productId, quantity) => {
         if (quantity <= 0) { removeFromCart(productId); return; }
         setCartItems(prev =>
-            prev.map(item => item.id === productId ? { ...item, quantity } : item)
+            prev.map(item => {
+                if (item.id === productId) {
+                    if (quantity > item.stock) {
+                        alert(`Sorry, only ${item.stock} items are available in stock.`);
+                        return item;
+                    }
+                    return { ...item, quantity };
+                }
+                return item;
+            })
         );
     };
 

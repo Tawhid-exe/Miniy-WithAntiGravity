@@ -36,10 +36,23 @@ function AdminOrders() {
     };
 
     const handleUpdateStatus = async (orderId, newStatus) => {
+        const order = orders.find(o => o.orderId === orderId);
+        if (!order) return;
+
+        // Confirmation dialog for cancellations
+        if (newStatus === 'Cancelled') {
+            const confirmed = window.confirm(
+                `Are you sure you want to cancel order ${orderId}?\n\nThis will restore the stock for all items in this order.`
+            );
+            if (!confirmed) return;
+        }
+
         try {
             // Optimistic update
             setOrders(orders.map(o => o.orderId === orderId ? { ...o, status: newStatus } : o));
-            await adminUpdateOrderStatus(orderId, newStatus);
+            await adminUpdateOrderStatus(orderId, newStatus, order.items);
+            // Reload orders after cancellation to reflect restored stock
+            if (newStatus === 'Cancelled') await loadOrders();
         } catch (e) {
             alert('Status update failed');
             loadOrders(); // revert
