@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { submitOrder } from '../services/appsScript';
+import { submitOrder } from '../services/supabase-api';
 
 const CartContext = createContext();
 

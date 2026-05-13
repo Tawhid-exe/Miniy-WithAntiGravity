@@ -1,10 +1,10 @@
 /**
  * generate-sitemap.js
- * Runs BEFORE vite build. Fetches all products from Google Apps Script
+ * Runs BEFORE vite build. Fetches all products from Supabase
  * and generates a sitemap.xml in the public/ directory.
  *
  * Usage: node scripts/generate-sitemap.js
- * Requires: VITE_APPS_SCRIPT_URL in .env.local (or env variable on Vercel)
+ * Requires: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local (or env variables on Vercel)
  */
 
 import fs from 'fs';
@@ -15,67 +15,48 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const SITE_URL = 'https://minivy.vercel.app';
 
-// Read the Apps Script URL from .env.local or environment
-function getAppsScriptUrl() {
-    // First check environment variable (works on Vercel)
-    if (process.env.VITE_APPS_SCRIPT_URL) {
-        return process.env.VITE_APPS_SCRIPT_URL;
-    }
-    // Fallback: read from .env.local
+function getEnvVars() {
+    const env = { url: process.env.VITE_SUPABASE_URL, key: process.env.VITE_SUPABASE_ANON_KEY };
     const envPath = path.resolve(__dirname, '..', '.env.local');
     if (fs.existsSync(envPath)) {
         const envContent = fs.readFileSync(envPath, 'utf-8');
-        const match = envContent.match(/VITE_APPS_SCRIPT_URL=(.+)/);
-        if (match) return match[1].trim();
+        const urlMatch = envContent.match(/VITE_SUPABASE_URL=(.+)/);
+        const keyMatch = envContent.match(/VITE_SUPABASE_ANON_KEY=(.+)/);
+        if (urlMatch) env.url = urlMatch[1].trim();
+        if (keyMatch) env.key = keyMatch[1].trim();
     }
-    return null;
+    return env;
 }
 
-async function fetchProducts(scriptUrl) {
-    const res = await fetch(scriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'getProducts' }),
+async function fetchProducts(url, key) {
+    const res = await fetch(`${url}/rest/v1/products?active=eq.true&select=id`, {
+        headers: {
+            'apikey': key,
+            'Authorization': `Bearer ${key}`
+        }
     });
+    if (!res.ok) throw new Error('Failed to fetch products');
     const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Failed to fetch products');
-    return (data.products || []).filter(p => String(p.active).toUpperCase() === 'TRUE');
+    return data;
 }
 
 function buildSitemap(products) {
     const today = new Date().toISOString().split('T')[0];
 
-    // Static pages
     const staticPages = [
         { loc: '/', priority: '1.0', changefreq: 'daily' },
         { loc: '/products', priority: '0.9', changefreq: 'daily' },
         { loc: '/auth', priority: '0.3', changefreq: 'monthly' },
     ];
 
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-`;
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
-    // Add static pages
     for (const page of staticPages) {
-        xml += `  <url>
-    <loc>${SITE_URL}${page.loc}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>
-`;
+        xml += `  <url>\n    <loc>${SITE_URL}${page.loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${page.changefreq}</changefreq>\n    <priority>${page.priority}</priority>\n  </url>\n`;
     }
 
-    // Add product pages
     for (const product of products) {
-        xml += `  <url>
-    <loc>${SITE_URL}/product/${product.id}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-`;
+        xml += `  <url>\n    <loc>${SITE_URL}/product/${product.id}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
     }
 
     xml += `</urlset>`;
@@ -85,9 +66,9 @@ function buildSitemap(products) {
 async function main() {
     console.log('[sitemap] Starting sitemap generation...');
 
-    const scriptUrl = getAppsScriptUrl();
-    if (!scriptUrl || scriptUrl === 'your_google_apps_script_url_here') {
-        console.warn('[sitemap] No Apps Script URL found. Generating static-only sitemap.');
+    const env = getEnvVars();
+    if (!env.url || !env.key) {
+        console.warn('[sitemap] No Supabase credentials found. Generating static-only sitemap.');
         const xml = buildSitemap([]);
         const outPath = path.resolve(__dirname, '..', 'public', 'sitemap.xml');
         fs.writeFileSync(outPath, xml, 'utf-8');
@@ -96,7 +77,7 @@ async function main() {
     }
 
     try {
-        const products = await fetchProducts(scriptUrl);
+        const products = await fetchProducts(env.url, env.key);
         console.log(`[sitemap] Fetched ${products.length} active products`);
         const xml = buildSitemap(products);
         const outPath = path.resolve(__dirname, '..', 'public', 'sitemap.xml');

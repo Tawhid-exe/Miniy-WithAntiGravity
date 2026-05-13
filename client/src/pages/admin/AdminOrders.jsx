@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { adminGetOrders, adminUpdateOrderStatus } from '../../services/appsScript';
+import { adminGetOrders, adminUpdateOrderStatus } from '../../services/supabase-api';
 import { Search, MapPin, Phone, User, Package, Calendar, Clock, CheckCircle, Truck, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
 const fmt = (n) => '৳' + Number(n || 0).toLocaleString('en-IN');

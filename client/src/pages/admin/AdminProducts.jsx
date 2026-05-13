@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { adminAddProduct, adminUpdateProduct, adminDeleteProduct, adminFetchProducts, adminFetchBmsCategories, adminFetchBmsStock } from '../../services/appsScript';
+import { adminAddProduct, adminUpdateProduct, adminDeleteProduct, adminFetchProducts, adminFetchBmsCategories, adminFetchBmsStock } from '../../services/supabase-api';
 import { uploadImage } from '../../services/cloudinary';
 import { Plus, Edit2, Trash2, Search, X, Save, Image as ImageIcon, Tag, Eye, EyeOff, UploadCloud, Package } from 'lucide-react';
 

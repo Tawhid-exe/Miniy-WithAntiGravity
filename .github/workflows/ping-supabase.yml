@@ -1,0 +1,22 @@
+# ═══════════════════════════════════════════════════════════════
+#  Ping Supabase every 3 days to prevent free-tier auto-pause
+#  (Supabase pauses inactive projects after 7 days)
+# ═══════════════════════════════════════════════════════════════
+name: Ping Supabase
+
+on:
+  schedule:
+    - cron: '0 0 */3 * *'  # Every 3 days at midnight UTC
+  workflow_dispatch:        # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -sf "${{ secrets.SUPABASE_URL }}/rest/v1/" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
+            > /dev/null
+          echo "✅ Supabase pinged successfully"

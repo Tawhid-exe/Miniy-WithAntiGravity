@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { adminAuth } from '../../services/appsScript';
 import { Lock, Shield, ArrowRight } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
 
@@ -21,7 +20,13 @@ function AdminLogin() {
         e.preventDefault();
         setLoading(true); setError('');
         try {
-            await adminAuth(password);
+            const res = await fetch('/api/admin-auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.error || 'Incorrect password');
             sessionStorage.setItem('miniy_admin', 'true');
             navigate('/admin/products');
         } catch (err) {

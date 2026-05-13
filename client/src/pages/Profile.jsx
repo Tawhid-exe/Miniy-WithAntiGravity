@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomer } from '../context/CustomerContext';
-import { fetchCustomerOrders } from '../services/appsScript';
+import { fetchCustomerOrders } from '../services/supabase-api';
 import { User, Phone, MapPin, ShoppingBag, Edit2, Save, X, Package, CheckCircle, Truck, Clock, XCircle, LogOut } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 

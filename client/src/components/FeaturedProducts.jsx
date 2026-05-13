@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { fetchProductsWithStock } from '../services/sheets';
+import { fetchProductsWithStock } from '../services/supabase-api';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, Star, Tag } from 'lucide-react';
 

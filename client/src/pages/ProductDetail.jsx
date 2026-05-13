@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useCart } from '../context/CartContext';
-import { fetchSingleProduct, fetchInventory } from '../services/sheets';
+import { fetchSingleProduct, fetchInventory } from '../services/supabase-api';
 import { ShoppingCart, ChevronLeft, Tag, Package, ChevronRight, ChevronLeft as PrevImg, ZoomIn, Truck, ShieldCheck, RotateCcw, ChevronDown, Zap } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { ProductSkeleton } from '../components/Skeleton';

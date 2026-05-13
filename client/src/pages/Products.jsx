@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useCart } from '../context/CartContext';
-import { fetchProductsWithStock } from '../services/sheets';
+import { fetchProductsWithStock } from '../services/supabase-api';
 import { ShoppingCart, Sparkles, Search, Filter, X, Tag } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { ProductSkeleton } from '../components/Skeleton';

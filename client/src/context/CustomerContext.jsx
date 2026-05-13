@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { loginCustomer, registerCustomer, updateCustomerProfile } from '../services/appsScript';
+import { loginCustomer, registerCustomer, updateCustomerProfile } from '../services/supabase-api';
 
 const CustomerContext = createContext();
 
