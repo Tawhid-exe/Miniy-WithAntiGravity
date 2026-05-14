@@ -115,25 +115,20 @@ export async function submitOrder({ customerId, customerName, phone, address, it
     const orderId = 'ORD-' + Date.now();
     const shippingFee = totalPrice > 2000 ? 0 : 80;
 
-    const { error } = await supabase
-        .from('orders')
-        .insert({
-            id: orderId,
-            customer_id: customerId || null,
-            customer_name: customerName,
-            phone,
-            address,
-            items,
-            total_price: totalPrice,
-            shipping_fee: shippingFee,
-            status: 'Pending',
-            notes: notes || '',
-        });
+    const { data, error } = await supabase.rpc('place_order_safe', {
+        p_order_id: orderId,
+        p_customer_id: customerId || null,
+        p_customer_name: customerName,
+        p_phone: phone,
+        p_address: address,
+        p_items: items,
+        p_total_price: totalPrice,
+        p_shipping_fee: shippingFee,
+        p_notes: notes || ''
+    });
 
     if (error) throw new Error(error.message);
-
-    // Stock is NOT deducted here — it's deducted when admin confirms the order
-    // (via the confirm_order database function)
+    if (data && !data.success) throw new Error(data.error || 'Failed to place order.');
 
     return { success: true, orderId };
 }

@@ -718,19 +718,25 @@ tr:hover .row-actions{opacity:1}
 
 <script>
 // ══════════════════════════════════════════════════════════
+// SAFE LOCALSTORAGE (Brave blocks localStorage on file:// URLs)
+// ══════════════════════════════════════════════════════════
+const _lsMem = {};
+function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return _lsMem[k]||null; } }
+function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){ _lsMem[k]=String(v); } }
+function lsRem(k){ try { localStorage.removeItem(k); } catch(e){ delete _lsMem[k]; } }
+// ══════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════
 const DEFAULT_CATS = ['Rings','Claw','Bangle','Mirror','Hairpin','Gift','Other'];
 const CAT_COLORS_DEFAULT = {Rings:'#c9a853',Claw:'#a78bfa','Fish Claw':'#2dd4bf','Goth Claw':'#f472b6','Mini Claw':'#818cf8',Bangle:'#4ade80',Mirror:'#60a5fa',Hairpin:'#fb923c',Pin:'#facc15',Gift:'#f87171',Other:'#6b7280'};
-let CAT_COLORS = {...CAT_COLORS_DEFAULT,...JSON.parse(localStorage.getItem('bms_cat_colors')||'{}')};
-function saveCatColors(){localStorage.setItem('bms_cat_colors',JSON.stringify(CAT_COLORS));}
+let CAT_COLORS = {...CAT_COLORS_DEFAULT,...JSON.parse(lsGet('bms_cat_colors')||'{}')};
+function saveCatColors(){lsSet('bms_cat_colors',JSON.stringify(CAT_COLORS));if(typeof syncSettingsToDB==='function')syncSettingsToDB();}
 function getCatColor(cat){return CAT_COLORS[cat]||null;}
-let CATS = JSON.parse(localStorage.getItem('bms_cats') || JSON.stringify(DEFAULT_CATS));
+let CATS = JSON.parse(lsGet('bms_cats') || JSON.stringify(DEFAULT_CATS));
 const SALE_HEADERS  = ['id','item','cat','customer','qty','rev','cost','date','pay','due','ord','disc','notes','batchRef'];
 const COST_HEADERS  = ['id','item','cat','qty','totalCost','date','notes','type','missingFromBox','refundReceived','batchNum'];
 const SALES_TAB = 'Sales';
 const COSTS_TAB = 'Costs';
-const BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 const fmt  = n => '৳' + Number(n||0).toLocaleString('en-IN');
 const pct  = (a,b) => b ? Math.round(a/b*100)+'%' : '0%';
@@ -753,8 +759,6 @@ function renderBatchBadge(batchId){
 // STATE
 // ══════════════════════════════════════════════════════════
 let cfg = {clientId:'',sheetId:''};
-let accessToken = '';
-let tokenClient = null;
 let sales = [];
 let costsData = [];
 let currentPage = 'dashboard';
@@ -874,15 +878,15 @@ function populateCatSelects(){
 // CONFIG + AUTH
 // ══════════════════════════════════════════════════════════════
 let supabaseClient = null;
-function loadConfig(){cfg.clientId=localStorage.getItem('bms_supabase_url')||'';cfg.sheetId=localStorage.getItem('bms_supabase_key')||'';}
+function loadConfig(){cfg.clientId=lsGet('bms_supabase_url')||'';cfg.sheetId=lsGet('bms_supabase_key')||'';}
 function saveSetup(){
   const cid=$('inp-client-id').value.trim();const sid=$('inp-sheet-id').value.trim();
   if(!cid||!sid){showErr('setup-err','Fill in both fields.');return;}
-  localStorage.setItem('bms_supabase_url',cid);localStorage.setItem('bms_supabase_key',sid);
+  lsSet('bms_supabase_url',cid);lsSet('bms_supabase_key',sid);
   cfg.clientId=cid;cfg.sheetId=sid;hideErr('setup-err');showScreen('auth');populateAuthScreen();
 }
 function populateAuthScreen(){const t=s=>s.length>30?s.slice(0,16)+'…'+s.slice(-8):s;$('disp-client-id').textContent=t(cfg.clientId);$('disp-sheet-id').textContent=t(cfg.sheetId);}
-function resetSetup(){supabaseClient=null;showScreen('auth');populateAuthScreen();}
+function resetSetup(){supabaseClient=null;lsSet('bms_supabase_url','');lsSet('bms_supabase_key','');cfg.clientId='';cfg.sheetId='';showScreen('setup');}
 function showErr(id,msg){const e=$(id);e.style.display='block';e.textContent=msg;}
 function hideErr(id){$(id).style.display='none';}
 
@@ -892,7 +896,7 @@ async function signIn(){
   try {
     supabaseClient = supabase.createClient(cfg.clientId, cfg.sheetId);
     $('loading').classList.remove('hidden');
-    await Promise.all([fetchSales(),fetchCosts()]);
+    await Promise.all([fetchSettings(),fetchSales(),fetchCosts()]);
     initApp();showScreen('app');
   } catch(e) {
     $('loading').classList.add('hidden');
@@ -904,6 +908,21 @@ async function signIn(){
 // ══════════════════════════════════════════════════════════════
 // SUPABASE API
 // ══════════════════════════════════════════════════════════════
+async function fetchSettings(){
+  try{
+    const { data, error } = await supabaseClient.from('bms_settings').select('*').eq('id', 'global').maybeSingle();
+    if(!error && data){
+      CATS = (data.cats && data.cats.length > 0) ? data.cats : DEFAULT_CATS;
+      CAT_COLORS = {...CAT_COLORS_DEFAULT, ...(data.colors || {})};
+      lsSet('bms_cats', JSON.stringify(CATS));
+      lsSet('bms_cat_colors', JSON.stringify(CAT_COLORS));
+    }
+  }catch(e){ console.error("fetchSettings error:", e); }
+}
+async function syncSettingsToDB(){
+  if(!supabaseClient)return;
+  try{ await supabaseClient.from('bms_settings').upsert({ id: 'global', cats: CATS, colors: CAT_COLORS }); }catch(e){}
+}
 async function fetchSales(){
   const { data, error } = await supabaseClient.from('bms_sales').select('*').order('created_at', { ascending: true });
   if (error) throw error;
@@ -988,6 +1007,7 @@ function renderCurrentPage(){
 function renderDashboard(){
   const catFilter=$('dash-cat-filter')?.value||'';
   let baseSales=catFilter?sales.filter(s=>s.cat===catFilter):sales;
+  baseSales=baseSales.filter(s=>s.ord!=='Cancelled');
   const filtered=filterByTime(baseSales);
   const totalRev   =filtered.reduce((a,s)=>a+(+s.rev||0),0);
   const totalProfit=filtered.reduce((a,s)=>a+profit(s),0);
@@ -1177,7 +1197,7 @@ function onSaleBatchChange(){
   const batch=costsData.find(c=>c.id===batchId);
   if(!batch)return;
   const qty=+$('f-qty')?.value||1;
-  const effQty=Math.max(1,(+batch.qty||1)-(+batch.missingFromBox||0));
+  const effQty=Math.max(0,(+batch.qty||1)-(+batch.missingFromBox||0));
   const effCost=Math.max(0,(+batch.totalCost||0)-(+batch.refundReceived||0));
   const cpu=effQty?Math.round(effCost/effQty):0;
   $('f-cost').value=cpu*qty;
@@ -1229,7 +1249,10 @@ function autoFillSaleCost(){
 }
 async function saveSale(){
   const item=$('f-item').value.trim();if(!item){toast('Item name required','error');return;}
-  const entry={id:editId||uid(),item,cat:$('f-catf').value,customer:$('f-cust').value.trim(),qty:+$('f-qty').value||1,date:$('f-date').value,rev:+$('f-rev').value||0,cost:+$('f-cost').value||0,due:+$('f-due').value||0,disc:+$('f-disc').value||0,pay:$('f-pay-f').value,ord:$('f-ord-f').value,notes:$('f-notes').value.trim(),batchRef:$('f-batchref')?.value||''};
+  let payStatus=$('f-pay-f').value;
+  let dueAmt=+$('f-due').value||0;
+  if(payStatus==='Paid' && dueAmt>0){toast('Cannot mark Paid with Due > 0','error');return;}
+  const entry={id:editId||uid(),item,cat:$('f-catf').value,customer:$('f-cust').value.trim(),qty:+$('f-qty').value||1,date:$('f-date').value,rev:+$('f-rev').value||0,cost:+$('f-cost').value||0,due:dueAmt,disc:+$('f-disc').value||0,pay:payStatus,ord:$('f-ord-f').value,notes:$('f-notes').value.trim(),batchRef:$('f-batchref')?.value||''};
   const btn=$('btn-save-sale');btn.disabled=true;showSync(true);closeModal('m-sale');
   try{
     if(editId){const ex=sales.find(s=>s.id===editId);entry._row=ex._row;await updateRow(SALES_TAB,entry._row,SALE_HEADERS,entry);const i=sales.findIndex(s=>s.id===editId);sales[i]=entry;toast('Sale updated ✦','success');}
@@ -1369,6 +1392,7 @@ $('btn-confirm-del').onclick=async function(){
 function getCustomers(){
   const map={};
   sales.forEach(s=>{
+    if(s.ord==='Cancelled')return;
     const k=s.customer||'—';
     if(!map[k])map[k]={name:k,orders:0,revenue:0,profit:0,due:0,last:''};
     map[k].orders++;map[k].revenue+=+s.rev||0;map[k].profit+=profit(s);map[k].due+=+s.due||0;
@@ -1438,7 +1462,7 @@ function getFIFOBatches(cat){
   const purchases=costsData.filter(c=>c.cat===cat&&(c.type||'purchase')==='purchase').sort((a,b)=>a.date.localeCompare(b.date));
   const refunds=costsData.filter(c=>c.cat===cat&&c.type==='refund');
   const missing=costsData.filter(c=>c.cat===cat&&c.type==='missing');
-  const soldQty=sales.filter(s=>s.cat===cat).reduce((a,s)=>a+(+s.qty||0),0);
+  const soldQty=sales.filter(s=>s.cat===cat&&s.ord!=='Cancelled').reduce((a,s)=>a+(+s.qty||0),0);
   const refundedQty=refunds.reduce((a,c)=>a+(+c.qty||0),0);
   const missingQty=missing.reduce((a,c)=>a+(+c.qty||0),0);
   let toDeduct=soldQty+refundedQty+missingQty;
@@ -1604,7 +1628,8 @@ function cpCancel(){$('color-popover').classList.remove('open');_cpCat=null;}
 function removeCat(cat){
   if(cat==='Other') return;
   CATS=CATS.filter(c=>c!==cat);
-  localStorage.setItem('bms_cats',JSON.stringify(CATS));
+  lsSet('bms_cats',JSON.stringify(CATS));
+  syncSettingsToDB();
   populateCatSelects();renderCatManagerList();toast(`Removed "${cat}" from new entries`,'info');
 }
 function addCat(){
@@ -1612,7 +1637,8 @@ function addCat(){
   if(!name){toast('Enter a category name','error');return;}
   if(CATS.includes(name)){toast('Already exists','error');return;}
   CATS.push(name);
-  localStorage.setItem('bms_cats',JSON.stringify(CATS));
+  lsSet('bms_cats',JSON.stringify(CATS));
+  syncSettingsToDB();
   populateCatSelects();renderCatManagerList();
   $('new-cat-input').value='';toast(`Added "${name}"` ,'success');
 }
@@ -1624,8 +1650,9 @@ function renderCosts(){
   const purchases=costsData.filter(c=>(c.type||'purchase')==='purchase');
   const refundsAll=costsData.filter(c=>c.type==='refund');
   const missingAll=costsData.filter(c=>c.type==='missing');
-  const totalInvested=purchases.reduce((a,c)=>a+(+c.totalCost||0),0)-refundsAll.reduce((a,c)=>a+(+c.totalCost||0),0);
-  const totalRev=sales.reduce((a,s)=>a+(+s.rev||0),0);
+  const totalInvested=purchases.reduce((a,c)=>a+Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0)),0)-refundsAll.reduce((a,c)=>a+(+c.totalCost||0),0);
+  const validSales=sales.filter(s=>s.ord!=='Cancelled');
+  const totalRev=validSales.reduce((a,s)=>a+(+s.rev||0),0);
   const pnl=totalRev-totalInvested;
 
   $('cost-kpi-total').textContent=fmt(totalInvested);
@@ -1781,10 +1808,11 @@ function exportCSV(){
 }
 
 function exportPDF(){
-  const totalRev=sales.reduce((a,s)=>a+(+s.rev||0),0);
-  const totalProfit=sales.reduce((a,s)=>a+profit(s),0);
-  const totalDue=sales.reduce((a,s)=>a+(+s.due||0),0);
-  const totalInvested=costsData.filter(c=>(c.type||'purchase')==='purchase').reduce((a,c)=>a+(+c.totalCost||0),0);
+  const validSales=sales.filter(s=>s.ord!=='Cancelled');
+  const totalRev=validSales.reduce((a,s)=>a+(+s.rev||0),0);
+  const totalProfit=validSales.reduce((a,s)=>a+profit(s),0);
+  const totalDue=validSales.reduce((a,s)=>a+(+s.due||0),0);
+  const totalInvested=costsData.filter(c=>(c.type||'purchase')==='purchase').reduce((a,c)=>a+Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0)),0) - costsData.filter(c=>c.type==='refund').reduce((a,c)=>a+(+c.totalCost||0),0);
   const fmtN=n=>'৳'+Number(n||0).toLocaleString('en-IN');
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>BMS Report</title><style>
@@ -1824,7 +1852,7 @@ function exportPDF(){
     </tr>`).join('')}</tbody></table>
     <h2>Purchase Shipments</h2>
     <table><thead><tr><th>#</th><th>Item</th><th>Type</th><th>Category</th><th>Qty</th><th>Total Cost</th><th>Cost/Unit</th><th>Date</th><th>Notes</th></tr></thead>
-    <tbody>${costsData.map((c,i)=>{const cpu=c.qty&&c.totalCost?Math.round(c.totalCost/c.qty):0;return`<tr>
+    <tbody>${costsData.map((c,i)=>{const effQty=Math.max(0,(+c.qty||0)-(+c.missingFromBox||0));const effCost=Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0));const cpu=c.type==='missing'?0:(effQty?Math.round(effCost/effQty):0);return`<tr>
       <td style="color:#999">${i+1}</td><td><strong>${escH(c.item)}</strong></td><td>${c.type||'purchase'}</td>
       <td>${escH(c.cat)}</td><td>${c.qty}</td><td class="red">${fmtN(c.totalCost)}</td>
       <td>${cpu?fmtN(cpu):'—'}</td><td style="color:#666">${c.date}</td><td>${escH(c.notes)||'—'}</td>
@@ -1839,7 +1867,7 @@ function exportPDF(){
 document.addEventListener('DOMContentLoaded',()=>{
   loadConfig();
   if(!cfg.clientId||!cfg.sheetId){showScreen('setup');}
-  else{populateAuthScreen();initTokenClient();showScreen('auth');}
+  else{populateAuthScreen();showScreen('auth');}
   populateCatSelects();
 });
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
