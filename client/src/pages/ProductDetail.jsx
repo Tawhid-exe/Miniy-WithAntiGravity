@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useCart } from '../context/CartContext';
-import { fetchSingleProduct, fetchInventory } from '../services/supabase-api';
-import { ShoppingCart, ChevronLeft, Tag, Package, ChevronRight, ChevronLeft as PrevImg, ZoomIn, Truck, ShieldCheck, RotateCcw, ChevronDown, Zap } from 'lucide-react';
+import { useCustomer } from '../context/CustomerContext';
+import { fetchSingleProduct, fetchInventory, fetchWishlist, addToWishlist, removeFromWishlist } from '../services/supabase-api';
+import { ShoppingCart, ChevronLeft, Tag, Package, ChevronRight, ChevronLeft as PrevImg, ZoomIn, Truck, ShieldCheck, RotateCcw, ChevronDown, Zap, Heart } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { ProductSkeleton } from '../components/Skeleton';
 
@@ -103,6 +104,7 @@ function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
+    const { customer } = useCustomer();
 
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -110,6 +112,7 @@ function ProductDetail() {
     const [activeImg, setActiveImg] = useState(0);
     const [added, setAdded] = useState(false);
     const [lightbox, setLightbox] = useState(false);
+    const [isWished, setIsWished] = useState(false);
 
     useEffect(() => {
         const load = async () => {
@@ -120,15 +123,19 @@ function ProductDetail() {
                     fetchInventory(),
                 ]);
                 if (!prod) { setError('Product not found'); return; }
-                // We no longer override stock with BMS inventory. 
                 // prod.stock already contains the storefront allocated quantity from sheets.js
                 setProduct(prod);
+
+                if (customer?.id) {
+                    const wishes = await fetchWishlist(customer.id);
+                    setIsWished(wishes.includes(prod.id));
+                }
             } catch (e) {
                 setError('Could not load product.');
             } finally { setLoading(false); }
         };
         load();
-    }, [id]);
+    }, [id, customer?.id]);
 
     const handleAddToCart = () => {
         if (!product?.inStock) return;
@@ -141,6 +148,27 @@ function ProductDetail() {
         if (!product?.inStock) return;
         addToCart(product);
         navigate('/checkout');
+    };
+
+    const toggleWishlist = async () => {
+        if (!customer?.id) {
+            navigate('/auth');
+            return;
+        }
+        
+        const nextWished = !isWished;
+        setIsWished(nextWished); // Optimistic
+
+        try {
+            if (nextWished) {
+                await addToWishlist(customer.id, product.id);
+            } else {
+                await removeFromWishlist(customer.id, product.id);
+            }
+        } catch (err) {
+            console.error('Wishlist error:', err);
+            setIsWished(!nextWished); // Revert
+        }
     };
 
     const images = product?.images?.length ? product.images : ['https://placehold.co/600x600/1a1a2e/c9a853?text=Miniy'];
@@ -289,7 +317,15 @@ function ProductDetail() {
                                 )}
                             </div>
 
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">{product.name}</h1>
+                            <div className="flex items-start justify-between gap-4 mb-3">
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">{product.name}</h1>
+                                <button 
+                                    onClick={toggleWishlist}
+                                    className="p-3 rounded-full bg-gray-100 dark:bg-slate-800 hover:scale-110 transition-transform shrink-0"
+                                >
+                                    <Heart size={24} className={isWished ? 'fill-red-500 text-red-500' : 'text-gray-400 dark:text-gray-500'} />
+                                </button>
+                            </div>
 
                             <div className="mb-6">
                                 <span className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">

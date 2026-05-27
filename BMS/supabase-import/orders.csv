@@ -1,0 +1,2 @@
+id,created_at,customer_id,customer_name,phone,address,items,total_price,status
+"ORD-1777644652520","2026-05-01T14:10:52.520Z","0f1e3c70-d3b5-4e48-8024-c59d7d5c5638","Raiyan","8801402517833","280/C,Khilgaon","[{""id"":""prd-1777003790550"",""name"":""Bat Gothic Claw"",""category"":""Claws"",""bmsCategory"":""Goth Claw"",""price"":190,""quantity"":1,""image"":""https://res.cloudinary.com/dsemiizxm/image/upload/v1777003790/miniy-products/6294128389241114090_121_s47t1o.jpg"",""rowIdx"":1}]",270,"Cancelled"

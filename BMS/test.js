@@ -1,753 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>BMS</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#09090f">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root{
-  --bg:#09090f;--bg2:#0d0d17;--card:#111120;--card2:#161628;
-  --border:#1c1c32;--border2:#282845;
-  --gold:#c9a853;--gold2:#e2c575;--gold-dim:rgba(201,168,83,.1);--gold-glow:rgba(201,168,83,.2);
-  --green:#4ade80;--green-dim:rgba(74,222,128,.1);
-  --red:#f87171;--red-dim:rgba(248,113,113,.1);
-  --blue:#60a5fa;--blue-dim:rgba(96,165,250,.1);
-  --amber:#fbbf24;--amber-dim:rgba(251,191,36,.1);
-  --purple:#a78bfa;--purple-dim:rgba(167,139,250,.1);
-  --teal:#2dd4bf;--teal-dim:rgba(45,212,191,.1);
-  --text:#ede8d8;--text2:#8888aa;--text3:#44445a;--text4:#1e1e2a;
-  --num-font:'DM Mono',monospace;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-::selection{background:var(--gold-dim);color:var(--gold2)}
-input[type=color]{-webkit-appearance:none;appearance:none;border:none;cursor:pointer}
-input[type=color]::-webkit-color-swatch-wrapper{padding:0}
-input[type=color]::-webkit-color-swatch{border:none;border-radius:50%}
-button{font-family:'DM Sans',sans-serif;cursor:pointer;border:none;outline:none;transition:.15s}
-input,select,textarea{font-family:'DM Sans',sans-serif;outline:none}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-@keyframes toastIn{from{opacity:0;transform:translateX(110%)}to{opacity:1;transform:translateX(0)}}
-@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(110%)}}
-@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
-@keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-15px)}}
-.screen{display:none;height:100vh;overflow:auto}.screen.active{display:flex}
-#s-setup,#s-auth{align-items:center;justify-content:center;background:radial-gradient(ellipse 80% 80% at 50% -20%,#1a1a3a 0%,var(--bg) 60%);position:relative;overflow:hidden}
-.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;animation:orbFloat 12s ease-in-out infinite}
-.orb1{width:400px;height:400px;background:rgba(201,168,83,.04);top:-10%;left:-10%}
-.orb2{width:300px;height:300px;background:rgba(96,165,250,.04);bottom:10%;right:5%;animation-delay:-5s}
-.auth-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px;width:min(480px,90vw);position:relative;z-index:1;animation:fadeUp .5s ease both}
-.auth-brand{text-align:center;margin-bottom:40px}
-.auth-mark{font-family:'Cinzel',serif;font-size:40px;color:var(--gold);text-shadow:0 0 40px var(--gold-glow)}
-.auth-sub{color:var(--text2);font-size:12px;letter-spacing:3px;text-transform:uppercase;margin-top:8px}
-.form-group{margin-bottom:16px}
-.form-label{display:block;color:var(--text2);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;font-weight:500}
-.form-input{width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;font-size:13px;transition:.2s}
-.form-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
-.form-input::placeholder{color:var(--text3)}
-.btn-primary{width:100%;padding:14px;border-radius:12px;background:var(--gold);color:#0a0808;font-weight:700;font-size:14px;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-primary:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 8px 24px var(--gold-glow)}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:12px;transition:.2s}
-.btn-ghost:hover{border-color:var(--border);color:var(--text)}
-.auth-info{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px}
-.auth-info-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0}
-.auth-info-label{color:var(--text2)}
-.auth-info-val{color:var(--text);font-weight:500;font-family:'DM Mono',monospace;font-size:11px}
-.auth-status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-top:16px;justify-content:center}
-.status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.status-dot.green{background:var(--green);box-shadow:0 0 6px var(--green)}
-.status-dot.amber{background:var(--amber);animation:pulse 1.5s infinite}
-.err-msg{background:var(--red-dim);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--red);margin-bottom:16px;line-height:1.6}
-#s-app{flex-direction:row}
-.sidebar{width:224px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:relative}
-.sidebar::after{content:'';position:absolute;top:0;right:-1px;width:1px;height:100%;background:linear-gradient(to bottom,transparent,var(--gold-dim) 30%,var(--gold-dim) 70%,transparent)}
-.sidebar-header{padding:22px 18px 18px;border-bottom:1px solid var(--border)}
-.sidebar-brand{display:flex;align-items:center;gap:10px}
-.brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--gold-dim),transparent);border:1px solid rgba(201,168,83,.3);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;color:var(--gold);font-size:14px;flex-shrink:0}
-.brand-name{font-family:'Cinzel',serif;color:var(--gold);font-size:15px;letter-spacing:.5px}
-.brand-desc{color:var(--text3);font-size:10px;letter-spacing:.5px;margin-top:1px}
-.sidebar-nav{padding:10px 10px;flex:1;overflow-y:auto}
-.nav-section-label{color:var(--text3);font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:8px 12px 4px}
-.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:9px;background:transparent;color:var(--text2);font-size:13px;text-align:left;transition:.2s;margin-bottom:2px;position:relative}
-.nav-btn:hover{color:var(--text);background:rgba(255,255,255,.04)}
-.nav-btn.active{color:var(--gold);background:var(--gold-dim);font-weight:500}
-.nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--gold);border-radius:0 2px 2px 0}
-.nav-icon{width:14px;height:14px;flex-shrink:0;opacity:.7}
-.nav-btn.active .nav-icon{opacity:1}
-.sidebar-footer{padding:12px 10px;border-top:1px solid var(--border)}
-.conn-status{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;background:var(--bg);border:1px solid var(--border);font-size:11px;margin-bottom:8px}
-.conn-info{flex:1;min-width:0}
-.conn-label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:2px}
-.conn-val{color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;font-family:'DM Mono',monospace}
-.sidebar-action{width:100%;padding:7px;background:transparent;color:var(--text3);border:1px solid var(--border);border-radius:8px;font-size:11px;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
-.sidebar-action:hover{color:var(--text2);border-color:var(--border2)}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--bg2);flex-shrink:0;gap:12px}
-.page-title{font-family:'Cinzel',serif;font-size:18px;color:var(--text);font-weight:500;white-space:nowrap}
-.page-title span{color:var(--gold)}
-.topbar-right{display:flex;gap:8px;align-items:center}
-.btn-add{display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:9px;background:var(--gold);color:#0a0808;font-weight:700;font-size:13px;transition:.2s;white-space:nowrap}
-.btn-add:hover{background:var(--gold2);box-shadow:0 4px 16px var(--gold-glow)}
-.page-content{flex:1;overflow:auto;padding:22px 28px}
 
-/* ── Time Filter ── */
-.time-filter-wrap{display:flex;align-items:center;gap:10px;margin-bottom:20px}
-.time-filter-label{color:var(--text2);font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:600;white-space:nowrap}
-.time-filter-select{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s}
-.time-filter-select:focus{border-color:var(--gold);outline:none}
-.time-filter-select option{background:var(--card)}
-
-/* ── KPI Cards ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
-.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;transition:.2s}
-.kpi-card:hover{border-color:var(--border2)}
-.kpi-card::before{content:'';position:absolute;inset:0;opacity:0;transition:.3s;background:radial-gradient(ellipse at 100% 0%,var(--accent-glow,var(--gold-dim)) 0%,transparent 70%)}
-.kpi-card:hover::before{opacity:1}
-.kpi-label{color:var(--text2);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:10px}
-.kpi-value{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;color:var(--kpi-color,var(--text));line-height:1;margin-bottom:6px;letter-spacing:-1px}
-.kpi-sub{font-size:11px;color:var(--text3)}
-.kpi-icon{position:absolute;top:18px;right:18px;width:36px;height:36px;border-radius:10px;background:var(--accent-bg,var(--gold-dim));display:flex;align-items:center;justify-content:center}
-.kpi-bar{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--kpi-color,var(--gold)),transparent);border-radius:0 2px 2px 0}
-
-/* ── Charts ── */
-.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
-.charts-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
-.chart-title{font-family:'Cinzel',serif;font-size:11px;color:var(--text2);letter-spacing:.5px;margin-bottom:18px;text-transform:uppercase}
-.chart-title strong{color:var(--text);font-weight:600}
-.recent-sale{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
-.recent-sale:last-child{border-bottom:none}
-.rs-item{font-weight:500;font-size:13px}
-.rs-meta{color:var(--text2);font-size:11px;margin-top:2px}
-.rs-amount{font-family:'DM Mono',monospace;font-size:15px;color:var(--gold);text-align:right;flex-shrink:0;margin-left:12px;font-weight:500}
-
-/* ── Filter bar ── */
-.filter-bar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
-.search-wrap{position:relative;flex:1}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none}
-.search-input{width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 12px 9px 36px;font-size:13px;transition:.2s}
-.search-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
-.search-input::placeholder{color:var(--text3)}
-.filter-row{display:flex;gap:10px;align-items:center}
-.filter-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:12px}
-.filter-select,.filter-input{background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;width:100%;transition:.2s;cursor:pointer}
-.filter-select:focus,.filter-input:focus{border-color:var(--gold);outline:none}
-.filter-input::placeholder{color:var(--text3)}
-.btn-filter{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;transition:.2s;white-space:nowrap}
-.btn-filter:hover,.btn-filter.active{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
-.filter-badge{background:var(--gold);color:#0a0808;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.btn-clear{padding:9px 10px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--red);font-size:12px;transition:.2s;display:flex;align-items:center}
-.btn-clear:hover{background:var(--red-dim);border-color:rgba(248,113,113,.3)}
-
-/* ── Summary bar ── */
-.summary-bar{display:flex;gap:16px;margin-bottom:10px;font-size:12px;color:var(--text2);align-items:center;flex-wrap:wrap}
-.summary-bar strong{color:var(--text)}
-.summary-sep{color:var(--text4)}
-.summary-num{font-family:'DM Mono',monospace;font-size:13px;font-weight:500}
-
-/* ── Table ── */
-.table-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-.table-scroll{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-thead{position:sticky;top:0;z-index:1}
-th{padding:10px 12px;text-align:left;color:var(--text2);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;cursor:pointer;user-select:none;background:var(--bg2);border-bottom:1px solid var(--border);transition:.15s}
-th:hover{color:var(--text)}
-th.sort-asc::after{content:' ↑';color:var(--gold)}
-th.sort-desc::after{content:' ↓';color:var(--gold)}
-th.no-sort{cursor:default}th.no-sort:hover{color:var(--text2)}
-td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,.02)}
-
-/* Number cells - FIXED font */
-.num-cell{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
-.num-gold{color:var(--gold)}
-.num-green{color:var(--green)}
-.num-red{color:var(--red)}
-.num-muted{color:var(--text3);font-family:'DM Mono',monospace;font-size:13px}
-.sl-cell{color:var(--text3);font-family:'DM Mono',monospace;font-size:11px;font-weight:500;width:36px;text-align:center;user-select:none}
-
-.empty-row td{padding:60px;text-align:center;color:var(--text3)}
-.empty-icon{font-size:32px;margin-bottom:12px;opacity:.4}
-.empty-text{font-family:'Cinzel',serif;font-size:13px;margin-bottom:6px;color:var(--text2)}
-.empty-sub{font-size:12px}
-
-/* ── Badges ── */
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;border:1px solid transparent}
-.badge-Paid{background:rgba(74,222,128,.1);color:#4ade80;border-color:rgba(74,222,128,.2)}
-.badge-Pending{background:rgba(248,113,113,.1);color:#f87171;border-color:rgba(248,113,113,.2)}
-.badge-Partial{background:rgba(251,191,36,.1);color:#fbbf24;border-color:rgba(251,191,36,.2)}
-.badge-Completed{background:rgba(96,165,250,.1);color:#60a5fa;border-color:rgba(96,165,250,.2)}
-.badge-Delivered{background:rgba(74,222,128,.1);color:#4ade80;border-color:rgba(74,222,128,.2)}
-.badge-Cancelled{background:rgba(248,113,113,.1);color:#f87171;border-color:rgba(248,113,113,.2)}
-
-.row-actions{display:flex;gap:4px;opacity:0;transition:.15s}
-tr:hover .row-actions{opacity:1}
-.row-btn{padding:5px;border-radius:6px;background:transparent;transition:.15s;display:flex;color:var(--text3)}
-.row-btn-edit:hover{background:var(--blue-dim);color:var(--blue)}
-.row-btn-del:hover{background:var(--red-dim);color:var(--red)}
-.cell-cat{font-weight:700;font-size:11px}
-
-/* ── Customers ── */
-.cust-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-.cust-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:.2s}
-.cust-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
-.cust-avatar{width:44px;height:44px;border-radius:50%;background:var(--gold-dim);border:1px solid rgba(201,168,83,.3);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;color:var(--gold);font-size:18px}
-.cust-name{font-weight:600;font-size:14px;margin-bottom:2px}
-.cust-meta{color:var(--text2);font-size:11px;margin-bottom:12px}
-.ltv-badge{background:linear-gradient(135deg,var(--gold-dim),rgba(201,168,83,.05));border:1px solid rgba(201,168,83,.2);border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
-.ltv-label{color:var(--text3);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
-.ltv-value{font-family:'DM Mono',monospace;font-size:16px;color:var(--gold);font-weight:500}
-.cust-stats{display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
-.cust-stat-label{color:var(--text3);font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
-.cust-stat-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
-.cust-due-badge{background:var(--red-dim);color:var(--red);border:1px solid rgba(248,113,113,.25);border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700}
-.back-btn{display:flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--border);border-radius:9px;padding:7px 14px;color:var(--text2);font-size:12px;transition:.2s}
-.back-btn:hover{border-color:var(--border2);color:var(--text)}
-.cust-detail-header{display:flex;align-items:center;gap:14px;margin-bottom:22px}
-.cust-detail-name{font-family:'Cinzel',serif;color:var(--gold);font-size:20px}
-
-/* ── Costs page ── */
-.costs-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
-.cost-row-tag{display:inline-flex;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;border:1px solid transparent}
-
-/* ── Inventory tracker ── */
-.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:14px}
-.inv-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px}
-.inv-cat-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:600;margin-bottom:8px}
-.inv-bought{color:var(--text2);font-size:11px}
-.inv-sold{color:var(--text2);font-size:11px}
-.inv-remaining{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;margin:6px 0 4px}
-.inv-bar-bg{background:var(--border);border-radius:2px;height:3px;margin-top:8px}
-.inv-bar-fill{height:3px;border-radius:2px;transition:.5s}
-
-/* ── Modal ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(6px);padding:20px}
-.modal-overlay.open{display:flex}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;width:min(600px,100%);max-height:90vh;overflow-y:auto;animation:modalIn .25s ease both}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.modal-title{font-family:'Cinzel',serif;color:var(--gold);font-size:16px}
-.modal-close{padding:6px;border-radius:8px;background:transparent;color:var(--text3);transition:.15s;display:flex}
-.modal-close:hover{background:rgba(255,255,255,.06);color:var(--text)}
-.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.modal-full{grid-column:1/-1}
-.field-label{display:block;color:var(--text2);font-size:10px;letter-spacing:1.2px;text-transform:uppercase;font-weight:600;margin-bottom:6px}
-.field-input{width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:10px;padding:10px 13px;font-size:13px;transition:.2s;font-family:'DM Sans',sans-serif}
-.field-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
-.field-input::placeholder{color:var(--text3)}
-.profit-preview{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:14px}
-.profit-preview-label{color:var(--text2)}
-.profit-preview-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:500}
-.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
-.btn-cancel{padding:9px 20px;border-radius:9px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;transition:.2s}
-.btn-cancel:hover{border-color:var(--border);color:var(--text)}
-.btn-save{padding:9px 24px;border-radius:9px;border:none;background:var(--gold);color:#0a0808;font-weight:700;font-size:13px;display:flex;align-items:center;gap:7px;transition:.2s}
-.btn-save:hover{background:var(--gold2);box-shadow:0 4px 16px var(--gold-glow)}
-.btn-save:disabled{opacity:.5;cursor:not-allowed}
-#m-confirm .modal{max-width:360px;text-align:center}
-.confirm-icon{font-size:36px;margin-bottom:14px}
-.confirm-title{font-family:'Cinzel',serif;color:var(--text);font-size:16px;margin-bottom:8px}
-.confirm-text{color:var(--text2);font-size:13px;margin-bottom:24px;line-height:1.6}
-.confirm-actions{display:flex;gap:10px;justify-content:center}
-.btn-danger{padding:9px 22px;border-radius:9px;border:none;background:var(--red);color:#fff;font-weight:700;font-size:13px;transition:.2s}
-.btn-danger:hover{filter:brightness(1.1)}
-#toast-stack{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);min-width:220px;max-width:320px;animation:toastIn .3s ease both;pointer-events:all}
-.toast.out{animation:toastOut .3s ease both}
-.toast-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.toast-success .toast-dot{background:var(--green);box-shadow:0 0 8px var(--green)}
-.toast-error .toast-dot{background:var(--red);box-shadow:0 0 8px var(--red)}
-.toast-info .toast-dot{background:var(--gold);box-shadow:0 0 8px var(--gold)}
-.spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-/* ── Custom colour picker popover ── */
-#color-popover{position:fixed;z-index:9999;background:var(--card2);border:1px solid var(--border2);border-radius:14px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.7);width:220px;display:none}
-#color-popover.open{display:block}
-#color-popover-hue{width:100%;height:14px;border-radius:7px;border:none;cursor:pointer;margin-bottom:10px;background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);-webkit-appearance:none;appearance:none}
-#color-popover-hue::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,.4);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.4)}
-#color-popover-hex{width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:13px;margin-bottom:10px;text-align:center}
-#color-popover-preview{height:36px;border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,.1);transition:.15s}
-#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9998;gap:16px}
-#loading.hidden{display:none}
-.loading-mark{font-family:'Cinzel',serif;color:var(--gold);font-size:48px;animation:pulse 2s infinite}
-.loading-text{color:var(--text2);font-size:13px;letter-spacing:1px}
-@media(max-width:900px){.sidebar{display:none}.kpi-grid{grid-template-columns:repeat(2,1fr)}.charts-row,.charts-row2{grid-template-columns:1fr}.page-content{padding:16px}.topbar{padding:14px 16px}.filter-grid{grid-template-columns:1fr 1fr}}
-/* --- Phase 3.2: Mobile App Optimization --- */
-@media (max-width: 900px) {
-  aside {
-    position: fixed;
-    left: 0; top: 0; bottom: 0;
-    transform: translateX(-100%);
-    z-index: 9999;
-    box-shadow: 4px 0 20px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease;
-  }
-  aside.mobile-open { transform: translateX(0); }
-  .main { margin-left: 0; width: 100%; max-width: 100vw; overflow-x: hidden; }
-  .topbar { padding: 12px 16px; }
-  #hamburger-btn { display: flex !important; margin-right: 12px; }
-  
-  /* Make all tables scrollable horizontally to preserve layout on mobile */
-  .main table { display: block; overflow-x: auto; white-space: nowrap; }
-}
-#hamburger-btn {
-  display: none;
-  background: transparent;
-  border: none;
-  color: var(--text);
-  padding: 4px;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-}
-</style>
-</head>
-<body>
-<div id="loading"><div class="loading-mark">✦</div><div class="loading-text">Loading BMS...</div></div>
-<!-- Colour Picker Popover -->
-<div id="color-popover">
-  <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;font-weight:600" id="color-popover-label">Pick Colour</div>
-  <div id="color-popover-preview"></div>
-  <input type="range" id="color-popover-hue" min="0" max="360" value="0" oninput="cpHueChange(this.value)">
-  <div style="display:flex;gap:8px;margin-bottom:10px">
-    <input id="color-popover-sat" type="range" min="0" max="100" value="70" oninput="cpUpdate()" style="flex:1;height:10px;border-radius:5px;-webkit-appearance:none;appearance:none;cursor:pointer;border:none">
-    <input id="color-popover-lit" type="range" min="5" max="90" value="50" oninput="cpUpdate()" style="flex:1;height:10px;border-radius:5px;-webkit-appearance:none;appearance:none;cursor:pointer;border:none">
-  </div>
-  <input id="color-popover-hex" placeholder="#c9a853" oninput="cpHexInput(this.value)">
-  <div style="display:flex;gap:8px;margin-top:4px">
-    <button onclick="cpCancel()" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer">Cancel</button>
-    <button onclick="cpConfirm()" style="flex:1;padding:8px;border-radius:8px;background:var(--gold);border:none;color:#0a0808;font-weight:700;font-size:12px;cursor:pointer">✓ Confirm</button>
-  </div>
-</div>
-<div id="toast-stack"></div>
-
-<!-- Setup -->
-<div id="s-setup" class="screen">
-  <div class="orb orb1"></div><div class="orb orb2"></div>
-  <div class="auth-card">
-    <div class="auth-brand"><div class="auth-mark">BMS</div><div class="auth-sub">Products Manager</div></div>
-    <div id="setup-err" class="err-msg" style="display:none"></div>
-    <div class="form-group"><label class="form-label">Supabase Project URL</label><input id="inp-client-id" class="form-input" placeholder="https://xxxx.supabase.co"></div>
-    <div class="form-group">
-      <label class="form-label">Supabase Anon Key</label>
-      <input id="inp-sheet-id" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIs...">
-      <div style="font-size:11px;color:var(--text3);margin-top:6px">Find this in your Supabase API settings</div>
-    </div>
-    <button class="btn-primary" onclick="saveSetup()">Continue →</button>
-  </div>
-</div>
-
-<!-- Auth -->
-<div id="s-auth" class="screen">
-  <div class="orb orb1"></div><div class="orb orb2"></div>
-  <div class="auth-card">
-    <div class="auth-brand"><div class="auth-mark">BMS</div><div class="auth-sub">Products Manager</div></div>
-    <div id="auth-err" class="err-msg" style="display:none"></div>
-    <div class="auth-info">
-      <div class="auth-info-row"><span class="auth-info-label">Project URL</span><span class="auth-info-val" id="disp-client-id">—</span></div>
-      <div class="auth-info-row" style="margin-top:6px"><span class="auth-info-label">Anon Key</span><span class="auth-info-val" id="disp-sheet-id">—</span></div>
-    </div>
-    <button class="btn-primary" id="btn-signin" onclick="signIn()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-      Connect to Supabase
-    </button>
-    <div class="auth-status"><div class="status-dot green"></div><span>Connected to PostgreSQL</span></div>
-    <div style="text-align:center;margin-top:16px"><button class="btn-ghost" onclick="resetSetup()">Change settings</button></div>
-  </div>
-</div>
-
-<!-- App -->
-<div id="s-app" class="screen">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-brand">
-        <div class="brand-mark" style="overflow:hidden;padding:0;background:none;border:1px solid rgba(201,168,83,.3)"><img src="https://raw.githubusercontent.com/Tawhid-exe/Miniy-WithAntiGravity/main/Meterials/WhatsApp%20Image%202026-01-13%20at%209.54.39%20PM.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:9px;display:block" onerror="this.style.display='none';this.parentElement.innerHTML='✦';this.parentElement.style.cssText+=';display:flex;align-items:center;justify-content:center;font-family:Cinzel,serif;color:var(--gold);font-size:14px'"></div>
-        <div><div class="brand-name">BMS</div><div class="brand-desc">Products Manager</div></div>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section-label">Overview</div>
-      <button class="nav-btn active" onclick="nav('dashboard')" id="nav-dashboard">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Dashboard
-      </button>
-      <div class="nav-section-label" style="margin-top:8px">Records</div>
-      <button class="nav-btn" onclick="nav('sales')" id="nav-sales">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-        Sales
-      </button>
-      <button class="nav-btn" onclick="nav('customers')" id="nav-customers">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        Customers
-      </button>
-      <div class="nav-section-label" style="margin-top:8px">Inventory</div>
-      <button class="nav-btn" onclick="nav('costs')" id="nav-costs">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-        Costs &amp; Shipments
-      </button>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="conn-status">
-        <div class="status-dot green"></div>
-        <div class="conn-info"><div class="conn-label">Database</div><div class="conn-val" id="conn-sheet-label">Google Sheets</div></div>
-      </div>
-      <div style="display:flex;gap:6px;margin-bottom:6px">
-        <button class="sidebar-action" style="flex:1;gap:6px" onclick="exportCSV()" title="Export CSV — open in Excel / Google Sheets">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> CSV
-        </button>
-        <button class="sidebar-action" style="flex:1;gap:6px" onclick="exportPDF()" title="Export PDF Report — printable business report">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg> PDF
-        </button>
-        <button class="sidebar-action" onclick="refreshData()" title="Refresh data">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-        </button>
-      </div>
-      <button class="sidebar-action" onclick="resetSetup()">Sign out / Reset</button>
-    </div>
-  </aside>
-
-  <div class="main">
-    <div class="topbar">
-      <button id="hamburger-btn" onclick="document.querySelector('aside').classList.toggle('mobile-open')">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <div class="page-title" id="topbar-title">Dashboard</div>
-      <div class="topbar-right">
-        <div id="sync-indicator" style="font-size:11px;color:var(--text3);display:none;align-items:center;gap:6px"><div class="spinner" style="width:12px;height:12px"></div> Saving...</div>
-        <button class="btn-add" id="btn-add-sale" onclick="openAddSale()" style="display:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Sale
-        </button>
-        <button class="btn-add" id="btn-add-cost" onclick="openAddCost()" style="display:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Shipment
-        </button>
-      </div>
-    </div>
-    <div class="page-content">
-
-      <!-- DASHBOARD -->
-      <div id="page-dashboard">
-        <div class="time-filter-wrap">
-          <span class="time-filter-label">Period:</span>
-          <select class="time-filter-select" id="time-filter" onchange="renderDashboard()">
-            <option value="all">All Time</option>
-            <option value="30d">Last 30 Days</option>
-            <option value="3m">Last 3 Months</option>
-            <option value="6m">Last 6 Months</option>
-            <option value="1y">Last 1 Year</option>
-            <option value="3y">Last 3 Years</option>
-          </select>
-          <span class="time-filter-label" style="margin-left:8px">Category:</span>
-          <select class="time-filter-select" id="dash-cat-filter" onchange="renderDashboard()">
-            <option value="">All Categories</option>
-          </select>
-          <span id="dash-period-label" style="color:var(--text3);font-size:11px"></span>
-        </div>
-        <div class="kpi-grid">
-          <div class="kpi-card" style="--kpi-color:var(--gold);--accent-bg:var(--gold-dim);--accent-glow:var(--gold-glow)">
-            <div class="kpi-label">Total Revenue</div><div class="kpi-value" id="kpi-rev">৳0</div><div class="kpi-sub" id="kpi-rev-sub">—</div>
-            <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
-            <div class="kpi-bar" style="width:80%"></div>
-          </div>
-          <div class="kpi-card" style="--kpi-color:var(--green);--accent-bg:var(--green-dim);--accent-glow:rgba(74,222,128,.15)">
-            <div class="kpi-label">Total Profit</div><div class="kpi-value" id="kpi-profit">৳0</div><div class="kpi-sub" id="kpi-profit-sub">—</div>
-            <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
-            <div class="kpi-bar" style="width:60%;background:linear-gradient(90deg,var(--green),transparent)"></div>
-          </div>
-          <div class="kpi-card" style="--kpi-color:var(--blue);--accent-bg:var(--blue-dim);--accent-glow:rgba(96,165,250,.15)">
-            <div class="kpi-label">Total Cost</div><div class="kpi-value" id="kpi-cost">৳0</div><div class="kpi-sub" id="kpi-cost-sub">—</div>
-            <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-            <div class="kpi-bar" style="width:70%;background:linear-gradient(90deg,var(--blue),transparent)"></div>
-          </div>
-          <div class="kpi-card" style="--kpi-color:var(--red);--accent-bg:var(--red-dim);--accent-glow:rgba(248,113,113,.15)">
-            <div class="kpi-label">Outstanding Due</div><div class="kpi-value" id="kpi-due">৳0</div><div class="kpi-sub" id="kpi-due-sub">—</div>
-            <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-            <div class="kpi-bar" style="width:40%;background:linear-gradient(90deg,var(--red),transparent)"></div>
-          </div>
-          <div class="kpi-card" style="--kpi-color:var(--teal);--accent-bg:var(--teal-dim);--accent-glow:rgba(45,212,191,.15)">
-            <div class="kpi-label">Avg Order Value</div><div class="kpi-value" id="kpi-aov">৳0</div><div class="kpi-sub" id="kpi-aov-sub">—</div>
-            <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-            <div class="kpi-bar" style="width:55%;background:linear-gradient(90deg,var(--teal),transparent)"></div>
-          </div>
-        </div>
-        <div class="charts-row">
-          <div class="chart-card">
-            <div class="chart-title"><strong>Revenue &amp; Profit</strong> — Monthly Trend</div>
-            <div style="position:relative;height:210px"><canvas id="chart-line"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title"><strong>Revenue</strong> — By Category</div>
-            <div style="position:relative;height:160px"><canvas id="chart-doughnut"></canvas></div>
-            <div id="chart-legend" style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:12px"></div>
-          </div>
-        </div>
-        <div class="charts-row2">
-          <div class="chart-card">
-            <div class="chart-title"><strong>Monthly Bars</strong> — Revenue vs Profit vs Cost</div>
-            <div style="position:relative;height:160px"><canvas id="chart-bar"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title"><strong>Recent</strong> — Latest Sales</div>
-            <div id="recent-sales"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SALES -->
-      <div id="page-sales" style="display:none">
-        <div class="filter-bar">
-          <div class="filter-row">
-            <div class="search-wrap">
-              <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input class="search-input" id="search-input" placeholder="Search item, customer, category…" oninput="applyFilters()">
-            </div>
-            <button class="btn-filter" id="btn-filter-toggle" onclick="toggleFilters()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-              Filters <span id="filter-badge" style="display:none" class="filter-badge">0</span>
-            </button>
-            <button class="btn-clear" id="btn-clear-filters" onclick="clearFilters()" style="display:none">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-          <div id="filter-grid" class="filter-grid" style="display:none">
-            <select class="filter-select" id="f-cat" onchange="applyFilters()"><option value="">All Categories</option></select>
-            <select class="filter-select" id="f-pay" onchange="applyFilters()"><option value="">All Payments</option><option>Paid</option><option>Pending</option><option>Partial</option></select>
-            <input class="filter-input" type="date" id="f-from" onchange="applyFilters()">
-            <input class="filter-input" type="date" id="f-to" onchange="applyFilters()">
-            <input class="filter-input" type="number" id="f-minr" placeholder="Min ৳" onchange="applyFilters()">
-            <input class="filter-input" type="number" id="f-maxr" placeholder="Max ৳" onchange="applyFilters()">
-          </div>
-        </div>
-        <div class="summary-bar" id="summary-bar"></div>
-        <div class="table-card"><div class="table-scroll"><table><thead><tr id="table-head"></tr></thead><tbody id="table-body"></tbody></table></div></div>
-      </div>
-
-      <!-- CUSTOMERS -->
-      <div id="page-customers" style="display:none">
-        <div id="customers-list"></div>
-        <div id="customer-detail" style="display:none"></div>
-      </div>
-
-      <!-- COSTS & SHIPMENTS -->
-      <div id="page-costs" style="display:none">
-        <div class="costs-kpi-grid">
-          <div class="kpi-card" style="--kpi-color:var(--red);--accent-bg:var(--red-dim)">
-            <div class="kpi-label">Total Invested</div><div class="kpi-value" id="cost-kpi-total">৳0</div><div class="kpi-sub" id="cost-kpi-sub">across all shipments</div>
-            <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></div>
-          </div>
-          <div class="kpi-card" style="--kpi-color:var(--green);--accent-bg:var(--green-dim)">
-            <div class="kpi-label">Total Revenue</div><div class="kpi-value" id="cost-kpi-rev">৳0</div><div class="kpi-sub">from all sales</div>
-            <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div>
-          </div>
-          <div class="kpi-card" style="--kpi-color:var(--purple);--accent-bg:var(--purple-dim)">
-            <div class="kpi-label">Net P&amp;L</div><div class="kpi-value" id="cost-kpi-pnl">৳0</div><div class="kpi-sub">revenue minus total invested</div>
-            <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
-          </div>
-        </div>
-
-        <!-- Tabs -->
-        <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">
-          <button id="costs-tab-shipments" onclick="switchCostsTab('shipments')" style="padding:8px 18px;background:transparent;border:none;border-bottom:2px solid var(--gold);color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:-1px">Shipments</button>
-          <button id="costs-tab-stock" onclick="switchCostsTab('stock')" style="padding:8px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:-1px;transition:.2s">Stock Cost</button>
-        </div>
-
-        <!-- Shipments tab -->
-        <div id="costs-panel-shipments">
-          <div class="table-card" style="margin-bottom:20px">
-            <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-              <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--text2);letter-spacing:.5px;text-transform:uppercase">Purchase Shipments</div>
-              <button onclick="openCatManager()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
-                Manage Categories
-              </button>
-            </div>
-            <div class="table-scroll">
-              <table><thead><tr>
-                <th class="no-sort" style="width:36px">#</th>
-                <th class="no-sort">Item</th><th class="no-sort">Batch #</th><th class="no-sort">Type</th><th class="no-sort">Category</th><th class="no-sort">Qty</th>
-                <th class="no-sort">Total Cost</th><th class="no-sort">Cost / Unit</th>
-                <th class="no-sort">Date</th><th class="no-sort">Notes</th><th class="no-sort"></th>
-              </tr></thead><tbody id="costs-table-body"></tbody></table>
-            </div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title"><strong>Inventory Tracker</strong> — Bought vs Sold by Category</div>
-            <div id="inv-tracker" class="inv-grid"></div>
-          </div>
-        </div>
-
-        <!-- Stock Cost tab -->
-        <div id="costs-panel-stock" style="display:none">
-          <div class="table-card">
-            <div style="padding:16px 18px;border-bottom:1px solid var(--border)">
-              <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--text2);letter-spacing:.5px;text-transform:uppercase">Current Stock — Cost Per Unit by Batch</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:4px">FIFO order · Only batches with remaining stock shown · Click row to see full breakdown</div>
-            </div>
-            <div class="table-scroll"><table><thead><tr>
-              <th class="no-sort" style="width:28px">#</th>
-              <th class="no-sort">Category</th><th class="no-sort">Batch / Item</th><th class="no-sort">Date</th>
-              <th class="no-sort">In Stock</th><th class="no-sort">Cost / Unit</th><th class="no-sort">Stock Value</th><th class="no-sort">Notes</th>
-            </tr></thead><tbody id="stock-cost-body"></tbody></table></div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- Sale Modal -->
-<div class="modal-overlay" id="m-sale">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="modal-title">Add New Sale</div>
-      <button class="modal-close" onclick="closeModal('m-sale')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="modal-grid">
-      <div class="modal-full"><label class="field-label">Item Name *</label><input class="field-input" id="f-item" placeholder="e.g. Golden Ring" oninput="updateProfitPreview()"></div>
-      <div><label class="field-label">Category</label><select class="field-input" id="f-catf" style="cursor:pointer" onchange="autoFillSaleCost()"></select></div>
-      <div><label class="field-label">Customer</label><input class="field-input" id="f-cust" placeholder="Customer name"></div>
-      <div><label class="field-label">Quantity</label><input class="field-input" id="f-qty" type="number" min="1" value="1" oninput="autoFillSaleCost()"></div>
-      <div><label class="field-label">Date</label><input class="field-input" id="f-date" type="date"></div>
-      <div><label class="field-label">Revenue (৳) *</label><input class="field-input" id="f-rev" type="number" min="0" placeholder="0" oninput="updateProfitPreview()"></div>
-      <div><label class="field-label">Cost (৳) <span id="f-cost-hint" style="font-size:9px;color:var(--teal);letter-spacing:.5px"></span></label><input class="field-input" id="f-cost" type="number" min="0" placeholder="0" oninput="updateProfitPreview()"></div>
-      <div><label class="field-label">Amount Due (৳)</label><input class="field-input" id="f-due" type="number" min="0" placeholder="0"></div>
-      <div><label class="field-label">Discount (৳)</label><input class="field-input" id="f-disc" type="number" min="0" placeholder="0"></div>
-      <div><label class="field-label">Payment Status</label><select class="field-input" id="f-pay-f" style="cursor:pointer"><option>Paid</option><option>Pending</option><option>Partial</option></select></div>
-      <div><label class="field-label">Order Status</label><select class="field-input" id="f-ord-f" style="cursor:pointer"><option>Completed</option><option>Delivered</option><option>Cancelled</option></select></div>
-      <div class="modal-full" id="f-batch-wrap">
-        <label class="field-label">Source Batch <span style="color:var(--text3);font-size:9px;letter-spacing:.5px">— which stock batch is this sold from?</span></label>
-        <select class="field-input" id="f-batchref" style="cursor:pointer" onchange="onSaleBatchChange()">
-          <option value="">&#x26A1; FIFO Auto (oldest stock first)</option>
-        </select>
-      </div>
-      <div class="modal-full"><label class="field-label">Notes</label><textarea class="field-input" id="f-notes" rows="2" style="resize:vertical"></textarea></div>
-    </div>
-    <div class="profit-preview" id="profit-preview" style="display:none">
-      <span class="profit-preview-label">Profit preview</span>
-      <span class="profit-preview-val" id="profit-preview-val">—</span>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('m-sale')">Cancel</button>
-      <button class="btn-save" id="btn-save-sale" onclick="saveSale()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Save Sale
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Cost Modal -->
-<div class="modal-overlay" id="m-cost">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="cost-modal-title">Add Shipment</div>
-      <button class="modal-close" onclick="closeModal('m-cost')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="modal-grid">
-      <div class="modal-full"><label class="field-label">Item Name *</label><input class="field-input" id="cf-item" placeholder="e.g. 10x Fish Claw"></div>
-      <div><label class="field-label">Entry Type</label>
-        <select class="field-input" id="cf-type" style="cursor:pointer" onchange="updateCostPreview()">
-          <option value="purchase">Purchase (Stock In)</option>
-          <option value="refund">Refund (Returned to Supplier)</option>
-          <option value="missing">Missing / Lost Stock</option>
-        </select>
-      </div>
-      <div><label class="field-label">Category</label><select class="field-input" id="cf-cat" style="cursor:pointer" onchange="onCostCatChange()"></select></div>
-      <div><label class="field-label">Quantity (ordered)</label><input class="field-input" id="cf-qty" type="number" min="1" value="1" oninput="updateCostPreview()"></div>
-      <div id="cf-total-wrap"><label class="field-label">Total Cost (৳) <span id="cf-cost-label" style="color:var(--text3);font-size:9px">(leave 0 if unknown)</span></label><input class="field-input" id="cf-total" type="number" min="0" placeholder="0" oninput="updateCostPreview()"></div>
-      <div><label class="field-label">Date</label><input class="field-input" id="cf-date" type="date"></div>
-      <!-- Purchase-only: missing + refund inline adjustment -->
-      <div id="cf-box-missing-wrap" style="display:none"><label class="field-label">Missing from box <span style="color:var(--amber);font-size:9px">(items not received)</span></label><input class="field-input" id="cf-box-missing" type="number" min="0" placeholder="0" oninput="updateCostPreview()"></div>
-      <div id="cf-refund-amt-wrap" style="display:none"><label class="field-label">Refund received (৳) <span style="color:var(--green);font-size:9px">(partial refund from seller)</span></label><input class="field-input" id="cf-refund-amt" type="number" min="0" placeholder="0" oninput="updateCostPreview()"></div>
-      <div id="cf-batch-wrap"><label class="field-label">Batch # <span style="color:var(--text3);font-size:9px">(auto-suggested)</span></label><input class="field-input" id="cf-batch" type="number" min="1" placeholder="1"></div>
-      <div class="modal-full"><label class="field-label">Notes</label><input class="field-input" id="cf-notes" placeholder="Supplier, extra info, etc."></div>
-    </div>
-    <div class="profit-preview" id="cost-preview" style="display:none">
-      <div style="display:flex;flex-direction:column;gap:3px;width:100%">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="profit-preview-label">Effective cost / unit</span>
-          <span class="profit-preview-val" id="cost-preview-val" style="color:var(--blue);font-size:15px">—</span>
-        </div>
-        <div id="cost-preview-old-wrap" style="display:none;justify-content:space-between;align-items:center">
-          <span style="font-size:10px;color:var(--text3)">Original cost / unit (before adjustment)</span>
-          <span id="cost-preview-old" style="font-size:11px;color:var(--text3);text-decoration:line-through">—</span>
-        </div>
-        <div id="cost-preview-extra" style="font-size:11px;color:var(--text3);text-align:right;margin-top:1px"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal('m-cost')">Cancel</button>
-      <button class="btn-save" id="btn-save-cost" onclick="saveCost()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Save Shipment
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Confirm Modal -->
-<div class="modal-overlay" id="m-confirm">
-  <div class="modal" style="max-width:380px">
-    <div class="confirm-icon">⚠</div>
-    <div class="confirm-title">Delete this entry?</div>
-    <div class="confirm-text">This will permanently remove it from your Google Sheet and <strong style="color:var(--red)">cannot be undone</strong>.<br><br>Type <strong style="color:var(--gold);letter-spacing:2px">CONFIRM</strong> below to proceed.</div>
-    <div style="margin-bottom:20px">
-      <input id="confirm-type-input" class="field-input" placeholder="Type CONFIRM here…" autocomplete="off" oninput="onConfirmType()" onpaste="return false" style="text-align:center;font-weight:700;letter-spacing:2px;font-size:14px">
-    </div>
-    <div class="confirm-actions">
-      <button class="btn-cancel" onclick="closeModal('m-confirm');resetConfirmInput()">Cancel</button>
-      <button class="btn-danger" id="btn-confirm-del" disabled style="opacity:.35;cursor:not-allowed">Delete</button>
-    </div>
-  </div>
-</div>
-
-<!-- Right-click Context Menu -->
-<div id="ctx-menu" style="display:none;position:fixed;z-index:9999;background:var(--card2);border:1px solid var(--border2);border-radius:10px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.6);min-width:160px">
-  <button id="ctx-edit" onclick="ctxAction('edit')" style="width:100%;padding:10px 14px;background:transparent;color:var(--text);font-size:13px;text-align:left;display:flex;align-items:center;gap:9px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='transparent'">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit
-  </button>
-  <div style="height:1px;background:var(--border)"></div>
-  <button id="ctx-del" onclick="ctxAction('delete')" style="width:100%;padding:10px 14px;background:transparent;color:var(--red);font-size:13px;text-align:left;display:flex;align-items:center;gap:9px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s" onmouseover="this.style.background='var(--red-dim)'" onmouseout="this.style.background='transparent'">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg> Delete
-  </button>
-</div>
-
-<!-- Category Manager Modal -->
-<div class="modal-overlay" id="m-cats">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-header">
-      <div class="modal-title">Manage Categories</div>
-      <button class="modal-close" onclick="closeModal('m-cats')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6">These categories appear in Sales & Shipment forms. Historical data keeps its original category even if you remove it here.</div>
-    <div id="cat-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px"></div>
-    <div style="display:flex;gap:8px">
-      <input id="new-cat-input" class="field-input" placeholder="New category name…" style="flex:1" onkeydown="if(event.key==='Enter')addCat()">
-      <button onclick="addCat()" class="btn-save" style="white-space:nowrap;padding:9px 16px">+ Add</button>
-    </div>
-  </div>
-</div>
-
-<!-- Inventory Detail Modal -->
-<div class="modal-overlay" id="m-inv-detail">
-  <div class="modal" style="max-width:920px;width:min(920px,96vw)">
-    <div class="modal-header">
-      <div class="modal-title" id="inv-detail-title">Batch Detail</div>
-      <button class="modal-close" onclick="closeModal('m-inv-detail')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div id="inv-detail-body"></div>
-  </div>
-</div>
-
-<script>
 // ══════════════════════════════════════════════════════════
 // SAFE LOCALSTORAGE (Brave blocks localStorage on file:// URLs)
 // ══════════════════════════════════════════════════════════
@@ -761,13 +12,14 @@ function lsRem(k){ try { localStorage.removeItem(k); } catch(e){ delete _lsMem[k
 const DEFAULT_CATS = ['Rings','Claw','Bangle','Mirror','Hairpin','Gift','Other'];
 const CAT_COLORS_DEFAULT = {Rings:'#c9a853',Claw:'#a78bfa','Fish Claw':'#2dd4bf','Goth Claw':'#f472b6','Mini Claw':'#818cf8',Bangle:'#4ade80',Mirror:'#60a5fa',Hairpin:'#fb923c',Pin:'#facc15',Gift:'#f87171',Other:'#6b7280'};
 let CAT_COLORS = {...CAT_COLORS_DEFAULT,...JSON.parse(lsGet('bms_cat_colors')||'{}')};
-function saveCatColors(){lsSet('bms_cat_colors',JSON.stringify(CAT_COLORS));if(typeof syncSettingsToDB==='function')syncSettingsToDB();}
+function saveCatColors(){lsSet('bms_cat_colors',JSON.stringify(CAT_COLORS));}
 function getCatColor(cat){return CAT_COLORS[cat]||null;}
 let CATS = JSON.parse(lsGet('bms_cats') || JSON.stringify(DEFAULT_CATS));
 const SALE_HEADERS  = ['id','item','cat','customer','qty','rev','cost','date','pay','due','ord','disc','notes','batchRef'];
 const COST_HEADERS  = ['id','item','cat','qty','totalCost','date','notes','type','missingFromBox','refundReceived','batchNum'];
 const SALES_TAB = 'Sales';
 const COSTS_TAB = 'Costs';
+const BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 const fmt  = n => '৳' + Number(n||0).toLocaleString('en-IN');
 const pct  = (a,b) => b ? Math.round(a/b*100)+'%' : '0%';
@@ -790,6 +42,8 @@ function renderBatchBadge(batchId){
 // STATE
 // ══════════════════════════════════════════════════════════
 let cfg = {clientId:'',sheetId:''};
+let accessToken = '';
+let tokenClient = null;
 let sales = [];
 let costsData = [];
 let currentPage = 'dashboard';
@@ -917,7 +171,7 @@ function saveSetup(){
   cfg.clientId=cid;cfg.sheetId=sid;hideErr('setup-err');showScreen('auth');populateAuthScreen();
 }
 function populateAuthScreen(){const t=s=>s.length>30?s.slice(0,16)+'…'+s.slice(-8):s;$('disp-client-id').textContent=t(cfg.clientId);$('disp-sheet-id').textContent=t(cfg.sheetId);}
-function resetSetup(){supabaseClient=null;lsSet('bms_supabase_url','');lsSet('bms_supabase_key','');cfg.clientId='';cfg.sheetId='';showScreen('setup');}
+function resetSetup(){supabaseClient=null;showScreen('auth');populateAuthScreen();}
 function showErr(id,msg){const e=$(id);e.style.display='block';e.textContent=msg;}
 function hideErr(id){$(id).style.display='none';}
 
@@ -927,7 +181,7 @@ async function signIn(){
   try {
     supabaseClient = supabase.createClient(cfg.clientId, cfg.sheetId);
     $('loading').classList.remove('hidden');
-    await Promise.all([fetchSettings(),fetchSales(),fetchCosts()]);
+    await Promise.all([fetchSales(),fetchCosts()]);
     initApp();showScreen('app');
   } catch(e) {
     $('loading').classList.add('hidden');
@@ -939,22 +193,6 @@ async function signIn(){
 // ══════════════════════════════════════════════════════════════
 // SUPABASE API
 // ══════════════════════════════════════════════════════════════
-async function fetchSettings(){
-  try{
-    const { data, error } = await supabaseClient.from('bms_settings').select('*').eq('id', 'global').maybeSingle();
-    if(!error && data){
-      CATS = (data.cats && data.cats.length > 0) ? data.cats : DEFAULT_CATS;
-      CAT_COLORS = {...CAT_COLORS_DEFAULT, ...(data.colors || {})};
-      lsSet('bms_cats', JSON.stringify(CATS));
-      lsSet('bms_cat_colors', JSON.stringify(CAT_COLORS));
-    }
-  }catch(e){ console.error("fetchSettings error:", e); }
-}
-async function syncSettingsToDB(){
-  if(!supabaseClient)return;
-  const { error } = await supabaseClient.from('bms_settings').upsert({ id: 'global', cats: CATS, colors: CAT_COLORS });
-  if (error) console.error("Sync error:", error);
-}
 async function fetchSales(){
   const { data, error } = await supabaseClient.from('bms_sales').select('*').order('created_at', { ascending: true });
   if (error) throw error;
@@ -1039,7 +277,6 @@ function renderCurrentPage(){
 function renderDashboard(){
   const catFilter=$('dash-cat-filter')?.value||'';
   let baseSales=catFilter?sales.filter(s=>s.cat===catFilter):sales;
-  baseSales=baseSales.filter(s=>s.ord!=='Cancelled');
   const filtered=filterByTime(baseSales);
   const totalRev   =filtered.reduce((a,s)=>a+(+s.rev||0),0);
   const totalProfit=filtered.reduce((a,s)=>a+profit(s),0);
@@ -1229,7 +466,7 @@ function onSaleBatchChange(){
   const batch=costsData.find(c=>c.id===batchId);
   if(!batch)return;
   const qty=+$('f-qty')?.value||1;
-  const effQty=Math.max(0,(+batch.qty||1)-(+batch.missingFromBox||0));
+  const effQty=Math.max(1,(+batch.qty||1)-(+batch.missingFromBox||0));
   const effCost=Math.max(0,(+batch.totalCost||0)-(+batch.refundReceived||0));
   const cpu=effQty?Math.round(effCost/effQty):0;
   $('f-cost').value=cpu*qty;
@@ -1281,10 +518,7 @@ function autoFillSaleCost(){
 }
 async function saveSale(){
   const item=$('f-item').value.trim();if(!item){toast('Item name required','error');return;}
-  let payStatus=$('f-pay-f').value;
-  let dueAmt=+$('f-due').value||0;
-  if(payStatus==='Paid' && dueAmt>0){toast('Cannot mark Paid with Due > 0','error');return;}
-  const entry={id:editId||uid(),item,cat:$('f-catf').value,customer:$('f-cust').value.trim(),qty:+$('f-qty').value||1,date:$('f-date').value,rev:+$('f-rev').value||0,cost:+$('f-cost').value||0,due:dueAmt,disc:+$('f-disc').value||0,pay:payStatus,ord:$('f-ord-f').value,notes:$('f-notes').value.trim(),batchRef:$('f-batchref')?.value||''};
+  const entry={id:editId||uid(),item,cat:$('f-catf').value,customer:$('f-cust').value.trim(),qty:+$('f-qty').value||1,date:$('f-date').value,rev:+$('f-rev').value||0,cost:+$('f-cost').value||0,due:+$('f-due').value||0,disc:+$('f-disc').value||0,pay:$('f-pay-f').value,ord:$('f-ord-f').value,notes:$('f-notes').value.trim(),batchRef:$('f-batchref')?.value||''};
   const btn=$('btn-save-sale');btn.disabled=true;showSync(true);closeModal('m-sale');
   try{
     if(editId){const ex=sales.find(s=>s.id===editId);entry._row=ex._row;await updateRow(SALES_TAB,entry._row,SALE_HEADERS,entry);const i=sales.findIndex(s=>s.id===editId);sales[i]=entry;toast('Sale updated ✦','success');}
@@ -1424,7 +658,6 @@ $('btn-confirm-del').onclick=async function(){
 function getCustomers(){
   const map={};
   sales.forEach(s=>{
-    if(s.ord==='Cancelled')return;
     const k=s.customer||'—';
     if(!map[k])map[k]={name:k,orders:0,revenue:0,profit:0,due:0,last:''};
     map[k].orders++;map[k].revenue+=+s.rev||0;map[k].profit+=profit(s);map[k].due+=+s.due||0;
@@ -1494,7 +727,7 @@ function getFIFOBatches(cat){
   const purchases=costsData.filter(c=>c.cat===cat&&(c.type||'purchase')==='purchase').sort((a,b)=>a.date.localeCompare(b.date));
   const refunds=costsData.filter(c=>c.cat===cat&&c.type==='refund');
   const missing=costsData.filter(c=>c.cat===cat&&c.type==='missing');
-  const soldQty=sales.filter(s=>s.cat===cat&&s.ord!=='Cancelled').reduce((a,s)=>a+(+s.qty||0),0);
+  const soldQty=sales.filter(s=>s.cat===cat).reduce((a,s)=>a+(+s.qty||0),0);
   const refundedQty=refunds.reduce((a,c)=>a+(+c.qty||0),0);
   const missingQty=missing.reduce((a,c)=>a+(+c.qty||0),0);
   let toDeduct=soldQty+refundedQty+missingQty;
@@ -1661,7 +894,6 @@ function removeCat(cat){
   if(cat==='Other') return;
   CATS=CATS.filter(c=>c!==cat);
   lsSet('bms_cats',JSON.stringify(CATS));
-  syncSettingsToDB();
   populateCatSelects();renderCatManagerList();toast(`Removed "${cat}" from new entries`,'info');
 }
 function addCat(){
@@ -1670,7 +902,6 @@ function addCat(){
   if(CATS.includes(name)){toast('Already exists','error');return;}
   CATS.push(name);
   lsSet('bms_cats',JSON.stringify(CATS));
-  syncSettingsToDB();
   populateCatSelects();renderCatManagerList();
   $('new-cat-input').value='';toast(`Added "${name}"` ,'success');
 }
@@ -1682,9 +913,8 @@ function renderCosts(){
   const purchases=costsData.filter(c=>(c.type||'purchase')==='purchase');
   const refundsAll=costsData.filter(c=>c.type==='refund');
   const missingAll=costsData.filter(c=>c.type==='missing');
-  const totalInvested=purchases.reduce((a,c)=>a+Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0)),0)-refundsAll.reduce((a,c)=>a+(+c.totalCost||0),0);
-  const validSales=sales.filter(s=>s.ord!=='Cancelled');
-  const totalRev=validSales.reduce((a,s)=>a+(+s.rev||0),0);
+  const totalInvested=purchases.reduce((a,c)=>a+(+c.totalCost||0),0)-refundsAll.reduce((a,c)=>a+(+c.totalCost||0),0);
+  const totalRev=sales.reduce((a,s)=>a+(+s.rev||0),0);
   const pnl=totalRev-totalInvested;
 
   $('cost-kpi-total').textContent=fmt(totalInvested);
@@ -1840,11 +1070,10 @@ function exportCSV(){
 }
 
 function exportPDF(){
-  const validSales=sales.filter(s=>s.ord!=='Cancelled');
-  const totalRev=validSales.reduce((a,s)=>a+(+s.rev||0),0);
-  const totalProfit=validSales.reduce((a,s)=>a+profit(s),0);
-  const totalDue=validSales.reduce((a,s)=>a+(+s.due||0),0);
-  const totalInvested=costsData.filter(c=>(c.type||'purchase')==='purchase').reduce((a,c)=>a+Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0)),0) - costsData.filter(c=>c.type==='refund').reduce((a,c)=>a+(+c.totalCost||0),0);
+  const totalRev=sales.reduce((a,s)=>a+(+s.rev||0),0);
+  const totalProfit=sales.reduce((a,s)=>a+profit(s),0);
+  const totalDue=sales.reduce((a,s)=>a+(+s.due||0),0);
+  const totalInvested=costsData.filter(c=>(c.type||'purchase')==='purchase').reduce((a,c)=>a+(+c.totalCost||0),0);
   const fmtN=n=>'৳'+Number(n||0).toLocaleString('en-IN');
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>BMS Report</title><style>
@@ -1884,7 +1113,7 @@ function exportPDF(){
     </tr>`).join('')}</tbody></table>
     <h2>Purchase Shipments</h2>
     <table><thead><tr><th>#</th><th>Item</th><th>Type</th><th>Category</th><th>Qty</th><th>Total Cost</th><th>Cost/Unit</th><th>Date</th><th>Notes</th></tr></thead>
-    <tbody>${costsData.map((c,i)=>{const effQty=Math.max(0,(+c.qty||0)-(+c.missingFromBox||0));const effCost=Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0));const cpu=c.type==='missing'?0:(effQty?Math.round(effCost/effQty):0);return`<tr>
+    <tbody>${costsData.map((c,i)=>{const cpu=c.qty&&c.totalCost?Math.round(c.totalCost/c.qty):0;return`<tr>
       <td style="color:#999">${i+1}</td><td><strong>${escH(c.item)}</strong></td><td>${c.type||'purchase'}</td>
       <td>${escH(c.cat)}</td><td>${c.qty}</td><td class="red">${fmtN(c.totalCost)}</td>
       <td>${cpu?fmtN(cpu):'—'}</td><td style="color:#666">${c.date}</td><td>${escH(c.notes)||'—'}</td>
@@ -1899,7 +1128,7 @@ function exportPDF(){
 document.addEventListener('DOMContentLoaded',()=>{
   loadConfig();
   if(!cfg.clientId||!cfg.sheetId){showScreen('setup');}
-  else{populateAuthScreen();showScreen('auth');}
+  else{populateAuthScreen();initTokenClient();showScreen('auth');}
   populateCatSelects();
 });
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
@@ -1913,13 +1142,3 @@ document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='n'&&currentPage==='sales'){e.preventDefault();openAddSale();}
   if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
 });
-document.addEventListener('click', e => {
-  const sidebar = document.querySelector('aside');
-  const btn = document.getElementById('hamburger-btn');
-  if (sidebar.classList.contains('mobile-open') && !sidebar.contains(e.target) && !btn.contains(e.target)) {
-    sidebar.classList.remove('mobile-open');
-  }
-});
-</script>
-</body>
-</html>

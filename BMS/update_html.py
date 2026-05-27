@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import sys
+
+html_content = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -282,34 +284,6 @@ tr:hover .row-actions{opacity:1}
 .loading-mark{font-family:'Cinzel',serif;color:var(--gold);font-size:48px;animation:pulse 2s infinite}
 .loading-text{color:var(--text2);font-size:13px;letter-spacing:1px}
 @media(max-width:900px){.sidebar{display:none}.kpi-grid{grid-template-columns:repeat(2,1fr)}.charts-row,.charts-row2{grid-template-columns:1fr}.page-content{padding:16px}.topbar{padding:14px 16px}.filter-grid{grid-template-columns:1fr 1fr}}
-/* --- Phase 3.2: Mobile App Optimization --- */
-@media (max-width: 900px) {
-  aside {
-    position: fixed;
-    left: 0; top: 0; bottom: 0;
-    transform: translateX(-100%);
-    z-index: 9999;
-    box-shadow: 4px 0 20px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease;
-  }
-  aside.mobile-open { transform: translateX(0); }
-  .main { margin-left: 0; width: 100%; max-width: 100vw; overflow-x: hidden; }
-  .topbar { padding: 12px 16px; }
-  #hamburger-btn { display: flex !important; margin-right: 12px; }
-  
-  /* Make all tables scrollable horizontally to preserve layout on mobile */
-  .main table { display: block; overflow-x: auto; white-space: nowrap; }
-}
-#hamburger-btn {
-  display: none;
-  background: transparent;
-  border: none;
-  color: var(--text);
-  padding: 4px;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-}
 </style>
 </head>
 <body>
@@ -340,8 +314,8 @@ tr:hover .row-actions{opacity:1}
     <div class="form-group"><label class="form-label">Supabase Project URL</label><input id="inp-client-id" class="form-input" placeholder="https://xxxx.supabase.co"></div>
     <div class="form-group">
       <label class="form-label">Supabase Anon Key</label>
-      <input id="inp-sheet-id" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIs...">
-      <div style="font-size:11px;color:var(--text3);margin-top:6px">Find this in your Supabase API settings</div>
+      <input id="inp-sheet-id" class="form-input" placeholder="eyJh...">
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">From your Supabase API settings</div>
     </div>
     <button class="btn-primary" onclick="saveSetup()">Continue →</button>
   </div>
@@ -361,7 +335,7 @@ tr:hover .row-actions{opacity:1}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
       Connect to Supabase
     </button>
-    <div class="auth-status"><div class="status-dot green"></div><span>Connected to PostgreSQL</span></div>
+    <div class="auth-status"><div class="status-dot green"></div><span>Data lives in your Supabase DB · Anywhere, anytime</span></div>
     <div style="text-align:center;margin-top:16px"><button class="btn-ghost" onclick="resetSetup()">Change settings</button></div>
   </div>
 </div>
@@ -399,7 +373,7 @@ tr:hover .row-actions{opacity:1}
     <div class="sidebar-footer">
       <div class="conn-status">
         <div class="status-dot green"></div>
-        <div class="conn-info"><div class="conn-label">Database</div><div class="conn-val" id="conn-sheet-label">Google Sheets</div></div>
+        <div class="conn-info"><div class="conn-label">Database</div><div class="conn-val" id="conn-sheet-label">Supabase DB</div></div>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:6px">
         <button class="sidebar-action" style="flex:1;gap:6px" onclick="exportCSV()" title="Export CSV — open in Excel / Google Sheets">
@@ -418,9 +392,6 @@ tr:hover .row-actions{opacity:1}
 
   <div class="main">
     <div class="topbar">
-      <button id="hamburger-btn" onclick="document.querySelector('aside').classList.toggle('mobile-open')">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
       <div class="page-title" id="topbar-title">Dashboard</div>
       <div class="topbar-right">
         <div id="sync-indicator" style="font-size:11px;color:var(--text3);display:none;align-items:center;gap:6px"><div class="spinner" style="width:12px;height:12px"></div> Saving...</div>
@@ -698,7 +669,7 @@ tr:hover .row-actions{opacity:1}
   <div class="modal" style="max-width:380px">
     <div class="confirm-icon">⚠</div>
     <div class="confirm-title">Delete this entry?</div>
-    <div class="confirm-text">This will permanently remove it from your Google Sheet and <strong style="color:var(--red)">cannot be undone</strong>.<br><br>Type <strong style="color:var(--gold);letter-spacing:2px">CONFIRM</strong> below to proceed.</div>
+    <div class="confirm-text">This will permanently remove it from your Supabase DB and <strong style="color:var(--red)">cannot be undone</strong>.<br><br>Type <strong style="color:var(--gold);letter-spacing:2px">CONFIRM</strong> below to proceed.</div>
     <div style="margin-bottom:20px">
       <input id="confirm-type-input" class="field-input" placeholder="Type CONFIRM here…" autocomplete="off" oninput="onConfirmType()" onpaste="return false" style="text-align:center;font-weight:700;letter-spacing:2px;font-size:14px">
     </div>
@@ -749,29 +720,20 @@ tr:hover .row-actions{opacity:1}
 
 <script>
 // ══════════════════════════════════════════════════════════
-// SAFE LOCALSTORAGE (Brave blocks localStorage on file:// URLs)
-// ══════════════════════════════════════════════════════════
-const _lsMem = {};
-function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return _lsMem[k]||null; } }
-function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){ _lsMem[k]=String(v); } }
-function lsRem(k){ try { localStorage.removeItem(k); } catch(e){ delete _lsMem[k]; } }
-// ══════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════
 const DEFAULT_CATS = ['Rings','Claw','Bangle','Mirror','Hairpin','Gift','Other'];
 const CAT_COLORS_DEFAULT = {Rings:'#c9a853',Claw:'#a78bfa','Fish Claw':'#2dd4bf','Goth Claw':'#f472b6','Mini Claw':'#818cf8',Bangle:'#4ade80',Mirror:'#60a5fa',Hairpin:'#fb923c',Pin:'#facc15',Gift:'#f87171',Other:'#6b7280'};
-let CAT_COLORS = {...CAT_COLORS_DEFAULT,...JSON.parse(lsGet('bms_cat_colors')||'{}')};
-function saveCatColors(){lsSet('bms_cat_colors',JSON.stringify(CAT_COLORS));if(typeof syncSettingsToDB==='function')syncSettingsToDB();}
+let CAT_COLORS = {...CAT_COLORS_DEFAULT,...JSON.parse(localStorage.getItem('bms_cat_colors')||'{}')};
+function saveCatColors(){localStorage.setItem('bms_cat_colors',JSON.stringify(CAT_COLORS));}
 function getCatColor(cat){return CAT_COLORS[cat]||null;}
-let CATS = JSON.parse(lsGet('bms_cats') || JSON.stringify(DEFAULT_CATS));
-const SALE_HEADERS  = ['id','item','cat','customer','qty','rev','cost','date','pay','due','ord','disc','notes','batchRef'];
-const COST_HEADERS  = ['id','item','cat','qty','totalCost','date','notes','type','missingFromBox','refundReceived','batchNum'];
+let CATS = JSON.parse(localStorage.getItem('bms_cats') || JSON.stringify(DEFAULT_CATS));
 const SALES_TAB = 'Sales';
 const COSTS_TAB = 'Costs';
 const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 const fmt  = n => '৳' + Number(n||0).toLocaleString('en-IN');
 const pct  = (a,b) => b ? Math.round(a/b*100)+'%' : '0%';
-const profit = s => (parseFloat(s.rev)||0) - (parseFloat(s.cost)||0) - (parseFloat(s.disc)||0);
+const profit = s => (parseFloat(s.rev)||0) - (parseFloat(s.cost)||0);
 const $    = id => document.getElementById(id);
 const today= () => new Date().toISOString().slice(0,10);
 const escH = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -790,6 +752,7 @@ function renderBatchBadge(batchId){
 // STATE
 // ══════════════════════════════════════════════════════════
 let cfg = {clientId:'',sheetId:''};
+let supabase = null;
 let sales = [];
 let costsData = [];
 let currentPage = 'dashboard';
@@ -801,62 +764,6 @@ let charts = {};
 let pendingDeleteId = null;
 let pendingDeleteRow = null;
 let pendingDeleteType = 'sale';
-
-// ══════════════════════════════════════════════════════════
-// SAMPLE DATA — Full actual records
-// ══════════════════════════════════════════════════════════
-const SAMPLE_SALES = [
-  {item:"Golden Ring",cat:"Rings",customer:"Shoronika",qty:2,rev:120,cost:62,date:"2025-01-24",pay:"Paid",due:0,ord:"Completed",disc:0,notes:"First Order"},
-  {item:"Golden Ring",cat:"Rings",customer:"",qty:4,rev:240,cost:124,date:"2026-01-04",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Refund",cat:"Other",customer:"REFUND",qty:1,rev:142,cost:142,date:"2026-01-04",pay:"Paid",due:0,ord:"Cancelled",disc:0,notes:"Refund"},
-  {item:"Golden Ring",cat:"Rings",customer:"Rajani",qty:1,rev:60,cost:31,date:"2026-01-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:"Gift 40"},
-  {item:"Gift",cat:"Gift",customer:"",qty:1,rev:40,cost:0,date:"2026-01-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Golden Ring",cat:"Rings",customer:"Juthi Miss",qty:5,rev:300,cost:155,date:"2026-01-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:"Teacher"},
-  {item:"Golden Ring",cat:"Rings",customer:"Tuba",qty:1,rev:40,cost:31,date:"2026-01-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:"2p Set Discount"},
-  {item:"Golden Ring",cat:"Rings",customer:"Riana",qty:2,rev:120,cost:62,date:"2026-01-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Golden Ring",cat:"Rings",customer:"Riana",qty:2,rev:120,cost:62,date:"2026-01-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Golden Ring",cat:"Rings",customer:"Shoshi",qty:1,rev:60,cost:31,date:"2026-01-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Gift",cat:"Gift",customer:"",qty:1,rev:40,cost:0,date:"2026-01-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Golden Ring",cat:"Rings",customer:"Mukti",qty:1,rev:60,cost:31,date:"2026-01-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Gothic Claw",cat:"Goth Claw",customer:"Prothoma",qty:1,rev:190,cost:113,date:"2026-01-30",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Gothic Claw",cat:"Goth Claw",customer:"Siam",qty:1,rev:190,cost:113,date:"2026-01-31",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Silver Ring",cat:"Rings",customer:"Tuba",qty:3,rev:220,cost:93,date:"2026-02-03",pay:"Paid",due:0,ord:"Completed",disc:0,notes:"70+70+60"},
-  {item:"Claw + 2 Rings",cat:"Claw",customer:"Nadia",qty:1,rev:330,cost:175,date:"2026-02-03",pay:"Paid",due:0,ord:"Completed",disc:0,notes:"1x Claw + 2x Rings"},
-  {item:"Bangle",cat:"Bangle",customer:"Juthi Miss",qty:2,rev:460,cost:258,date:"2026-02-04",pay:"Pending",due:460,ord:"Completed",disc:0,notes:"220+240 DUE"},
-  {item:"Bangle",cat:"Bangle",customer:"Ratna",qty:1,rev:200,cost:129,date:"2026-02-04",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Golden Ring",cat:"Rings",customer:"Mukti",qty:2,rev:100,cost:62,date:"2026-02-04",pay:"Pending",due:100,ord:"Completed",disc:0,notes:"DUE"},
-  {item:"Gothic Claw",cat:"Goth Claw",customer:"Anisha",qty:1,rev:190,cost:113,date:"2026-02-04",pay:"Pending",due:190,ord:"Completed",disc:0,notes:"DUE"},
-  {item:"Golden Ring",cat:"Rings",customer:"Anisha",qty:2,rev:120,cost:62,date:"2026-02-04",pay:"Pending",due:120,ord:"Completed",disc:0,notes:"DUE"},
-  {item:"Golden Ring",cat:"Rings",customer:"Tuba",qty:1,rev:60,cost:31,date:"2026-02-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Golden Ring",cat:"Rings",customer:"Tuba",qty:1,rev:70,cost:31,date:"2026-02-05",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Golden Ring",cat:"Rings",customer:"Nadia",qty:1,rev:80,cost:31,date:"2026-02-08",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Golden Ring",cat:"Rings",customer:"Mimi Miss",qty:3,rev:210,cost:93,date:"2026-02-08",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Bangle",cat:"Bangle",customer:"Mimi Miss",qty:1,rev:220,cost:129,date:"2026-02-04",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Mirror",cat:"Mirror",customer:"Orpita",qty:1,rev:550,cost:458,date:"2026-02-06",pay:"Pending",due:550,ord:"Completed",disc:0,notes:"DUE"},
-  {item:"Goth Claw",cat:"Goth Claw",customer:"Afra",qty:1,rev:190,cost:113,date:"2026-03-10",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Fish Claw",cat:"Fish Claw",customer:"Adrita",qty:1,rev:230,cost:133,date:"2026-03-15",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Hairpin",cat:"Hairpin",customer:"Adrita",qty:1,rev:180,cost:68,date:"2026-03-15",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Mini Claw",cat:"Mini Claw",customer:"Othoi",qty:2,rev:200,cost:103,date:"2026-03-15",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Gothic Claw",cat:"Goth Claw",customer:"Nadia",qty:2,rev:480,cost:226,date:"2026-04-01",pay:"Paid",due:0,ord:"Completed",disc:0,notes:"2x Claw"},
-  {item:"Fish Claw",cat:"Fish Claw",customer:"Supti",qty:1,rev:230,cost:133,date:"2026-04-07",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Refund",cat:"Other",customer:"REFUND",qty:1,rev:110,cost:110,date:"2026-04-07",pay:"Paid",due:0,ord:"Cancelled",disc:0,notes:"Refund"},
-  {item:"Fish Claw",cat:"Fish Claw",customer:"Prottasha",qty:1,rev:230,cost:133,date:"2026-04-13",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Mirror",cat:"Mirror",customer:"Tuba",qty:1,rev:600,cost:458,date:"2026-04-21",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Golden Ring",cat:"Rings",customer:"",qty:1,rev:70,cost:31,date:"2026-04-21",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-  {item:"Hairpin",cat:"Hairpin",customer:"",qty:2,rev:310,cost:136,date:"2026-04-21",pay:"Paid",due:0,ord:"Completed",disc:0,notes:""},
-].map(s=>({...s,id:uid()}));
-
-const SAMPLE_COSTS = [
-  {item:"Mirror (5 pcs)",cat:"Mirror",qty:5,totalCost:2290,date:"2025-12-15",notes:"Batch 1",type:"purchase"},
-  {item:"Rings (28 pcs)",cat:"Rings",qty:28,totalCost:1020,date:"2025-12-15",notes:"Batch 1",type:"purchase"},
-  {item:"Claws (12 pcs)",cat:"Claw",qty:12,totalCost:1240,date:"2025-12-15",notes:"Batch 1",type:"purchase"},
-  {item:"Rings (40 pcs)",cat:"Rings",qty:40,totalCost:962,date:"2025-12-20",notes:"Batch 2",type:"purchase"},
-  {item:"Bangles (10 pcs)",cat:"Bangle",qty:10,totalCost:1286,date:"2026-01-01",notes:"Batch 1",type:"purchase"},
-  {item:"Fish Claw (10 pcs)",cat:"Fish Claw",qty:10,totalCost:1171,date:"2026-01-15",notes:"Batch 1",type:"purchase"},
-  {item:"Fish Claw (8 pcs)",cat:"Fish Claw",qty:8,totalCost:1189,date:"2026-02-15",notes:"Batch 2",type:"purchase"},
-  {item:"Hairpin (15 pcs)",cat:"Hairpin",qty:15,totalCost:1012,date:"2026-02-15",notes:"Batch 1",type:"purchase"},
-  {item:"Market Stall Fee",cat:"Other",qty:1,totalCost:250,date:"2026-01-01",notes:"Setup cost",type:"purchase"},
-].map(c=>({...c,id:uid()}));
 
 // ══════════════════════════════════════════════════════════
 // HELPERS
@@ -905,111 +812,92 @@ function populateCatSelects(){
   }
 }
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // CONFIG + AUTH
-// ══════════════════════════════════════════════════════════════
-let supabaseClient = null;
-function loadConfig(){cfg.clientId=lsGet('bms_supabase_url')||'';cfg.sheetId=lsGet('bms_supabase_key')||'';}
+// ══════════════════════════════════════════════════════════
+function loadConfig(){cfg.clientId=localStorage.getItem('bms_client_id')||'';cfg.sheetId=localStorage.getItem('bms_sheet_id')||'';}
 function saveSetup(){
   const cid=$('inp-client-id').value.trim();const sid=$('inp-sheet-id').value.trim();
   if(!cid||!sid){showErr('setup-err','Fill in both fields.');return;}
-  lsSet('bms_supabase_url',cid);lsSet('bms_supabase_key',sid);
-  cfg.clientId=cid;cfg.sheetId=sid;hideErr('setup-err');showScreen('auth');populateAuthScreen();
+  localStorage.setItem('bms_client_id',cid);localStorage.setItem('bms_sheet_id',sid);
+  cfg.clientId=cid;cfg.sheetId=sid;hideErr('setup-err');initTokenClient();showScreen('auth');populateAuthScreen();
 }
 function populateAuthScreen(){const t=s=>s.length>30?s.slice(0,16)+'…'+s.slice(-8):s;$('disp-client-id').textContent=t(cfg.clientId);$('disp-sheet-id').textContent=t(cfg.sheetId);}
-function resetSetup(){supabaseClient=null;lsSet('bms_supabase_url','');lsSet('bms_supabase_key','');cfg.clientId='';cfg.sheetId='';showScreen('setup');}
+function resetSetup(){supabase=null;showScreen('auth');populateAuthScreen();}
 function showErr(id,msg){const e=$(id);e.style.display='block';e.textContent=msg;}
 function hideErr(id){$(id).style.display='none';}
 
+function initTokenClient(){
+  if(!cfg.clientId||!cfg.sheetId) return;
+  supabase=window.supabase.createClient(cfg.clientId,cfg.sheetId);
+}
 async function signIn(){
   hideErr('auth-err');const btn=$('btn-signin');btn.disabled=true;
   btn.innerHTML='<div class="spinner" style="border-color:rgba(0,0,0,.2);border-top-color:#0a0808"></div> Connecting…';
-  try {
-    supabaseClient = supabase.createClient(cfg.clientId, cfg.sheetId);
+  try{
+    if(!supabase)initTokenClient();
     $('loading').classList.remove('hidden');
-    await Promise.all([fetchSettings(),fetchSales(),fetchCosts()]);
+    await Promise.all([fetchSales(),fetchCosts()]);
     initApp();showScreen('app');
-  } catch(e) {
+  }catch(e){
     $('loading').classList.add('hidden');
     btn.disabled=false;btn.innerHTML='Connect to Supabase';
-    showErr('auth-err','Auth failed: '+e.message);
+    showErr('auth-err','Could not load data. Check URL and Key. Error: '+e.message);
   }
 }
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // SUPABASE API
-// ══════════════════════════════════════════════════════════════
-async function fetchSettings(){
-  try{
-    const { data, error } = await supabaseClient.from('bms_settings').select('*').eq('id', 'global').maybeSingle();
-    if(!error && data){
-      CATS = (data.cats && data.cats.length > 0) ? data.cats : DEFAULT_CATS;
-      CAT_COLORS = {...CAT_COLORS_DEFAULT, ...(data.colors || {})};
-      lsSet('bms_cats', JSON.stringify(CATS));
-      lsSet('bms_cat_colors', JSON.stringify(CAT_COLORS));
-    }
-  }catch(e){ console.error("fetchSettings error:", e); }
-}
-async function syncSettingsToDB(){
-  if(!supabaseClient)return;
-  const { error } = await supabaseClient.from('bms_settings').upsert({ id: 'global', cats: CATS, colors: CAT_COLORS });
-  if (error) console.error("Sync error:", error);
-}
+// ══════════════════════════════════════════════════════════
 async function fetchSales(){
-  const { data, error } = await supabaseClient.from('bms_sales').select('*').order('created_at', { ascending: true });
-  if (error) throw error;
-  const rows = data || [];
-  if(rows.length===0){sales=SAMPLE_SALES;await bulkWriteSales();return;}
-  sales=rows.map((r,i)=>({_row:i+2,id:r.id||uid(),item:r.item||'',cat:r.cat||'Rings',customer:r.customer||'',qty:+r.qty||1,rev:+r.rev||0,cost:+r.cost||0,date:r.date||'',pay:r.pay||'Paid',due:+r.due||0,ord:r.ord||'Completed',disc:+r.disc||0,notes:r.notes||'',batchRef:r.batch_ref||''}));
+  const {data,error}=await supabase.from('bms_sales').select('*').order('date',{ascending:true});
+  if(error)throw new Error(error.message);
+  sales=data.map((r,i)=>({_row:i+2,id:r.id,item:r.item||'',cat:r.cat||'Rings',customer:r.customer||'',qty:+r.qty||1,rev:+r.rev||0,cost:+r.cost||0,date:r.date||'',pay:r.pay||'Paid',due:+r.due||0,ord:r.ord||'Completed',disc:+r.disc||0,notes:r.notes||'',batchRef:r.batch_ref||''}));
 }
 
 async function fetchCosts(){
-  const { data, error } = await supabaseClient.from('bms_costs').select('*').order('created_at', { ascending: true });
-  if (error) throw error;
-  const rows = data || [];
-  if(rows.length===0){costsData=SAMPLE_COSTS;await bulkWriteCosts();return;}
-  costsData=rows.map((r,i)=>({_row:i+2,id:r.id||uid(),item:r.item||'',cat:r.cat||'Other',qty:+r.qty||1,totalCost:+r.total_cost||0,date:r.date||'',notes:r.notes||'',type:r.type||'purchase',missingFromBox:+r.missing_from_box||0,refundReceived:+r.refund_received||0,batchNum:+r.batch_num||0}));
+  const {data,error}=await supabase.from('bms_costs').select('*').order('date',{ascending:true});
+  if(error)throw new Error(error.message);
+  costsData=data.map((r,i)=>({_row:i+2,id:r.id,item:r.item||'',cat:r.cat||'Other',qty:+r.qty||1,totalCost:+r.total_cost||0,date:r.date||'',notes:r.notes||'',type:r.type||'purchase',missingFromBox:+r.missing_from_box||0,refundReceived:+r.refund_received||0,batchNum:+r.batch_num||0}));
 }
 
 async function refreshData(){showSync(true);try{await Promise.all([fetchSales(),fetchCosts()]);renderCurrentPage();toast('Refreshed','success');}catch(e){toast('Refresh failed: '+e.message,'error');}showSync(false);}
 
-async function bulkWriteSales(){
-  const rows=sales.map(s=>({id:s.id,item:s.item,cat:s.cat,customer:s.customer,qty:s.qty,rev:s.rev,cost:s.cost,date:s.date,pay:s.pay,due:s.due,ord:s.ord,disc:s.disc,notes:s.notes,batch_ref:s.batchRef}));
-  await supabaseClient.from('bms_sales').insert(rows);
-  await fetchSales();
-}
-async function bulkWriteCosts(){
-  const rows=costsData.map(c=>({id:c.id,item:c.item,cat:c.cat,qty:c.qty,total_cost:c.totalCost,date:c.date,notes:c.notes,type:c.type,missing_from_box:c.missingFromBox,refund_received:c.refundReceived,batch_num:c.batchNum}));
-  await supabaseClient.from('bms_costs').insert(rows);
-  await fetchCosts();
+async function appendRow(tab,headers,obj){
+  let dbObj = {};
+  if(tab === SALES_TAB) {
+    dbObj = {id:obj.id, item:obj.item, cat:obj.cat, customer:obj.customer, qty:obj.qty, rev:obj.rev, cost:obj.cost, date:obj.date, pay:obj.pay, due:obj.due, ord:obj.ord, disc:obj.disc, notes:obj.notes, batch_ref:obj.batchRef};
+  } else {
+    dbObj = {id:obj.id, item:obj.item, cat:obj.cat, qty:obj.qty, total_cost:obj.totalCost, date:obj.date, notes:obj.notes, type:obj.type, missing_from_box:obj.missingFromBox, refund_received:obj.refundReceived, batch_num:obj.batchNum};
+  }
+  const t = tab === SALES_TAB ? 'bms_sales' : 'bms_costs';
+  const {error} = await supabase.from(t).insert([dbObj]);
+  if(error) throw new Error(error.message);
 }
 
-async function appendRow(tab,headers,obj){
-  const table = tab === SALES_TAB ? 'bms_sales' : 'bms_costs';
-  let dbObj;
-  if(tab===SALES_TAB) dbObj={id:obj.id,item:obj.item,cat:obj.cat,customer:obj.customer,qty:obj.qty,rev:obj.rev,cost:obj.cost,date:obj.date,pay:obj.pay,due:obj.due,ord:obj.ord,disc:obj.disc,notes:obj.notes,batch_ref:obj.batchRef};
-  else dbObj={id:obj.id,item:obj.item,cat:obj.cat,qty:obj.qty,total_cost:obj.totalCost,date:obj.date,notes:obj.notes,type:obj.type,missing_from_box:obj.missingFromBox,refund_received:obj.refundReceived,batch_num:obj.batchNum};
-  const { error } = await supabaseClient.from(table).insert(dbObj);
-  if(error) throw error;
-}
 async function updateRow(tab,row,headers,obj){
-  const table = tab === SALES_TAB ? 'bms_sales' : 'bms_costs';
-  let dbObj;
-  if(tab===SALES_TAB) dbObj={item:obj.item,cat:obj.cat,customer:obj.customer,qty:obj.qty,rev:obj.rev,cost:obj.cost,date:obj.date,pay:obj.pay,due:obj.due,ord:obj.ord,disc:obj.disc,notes:obj.notes,batch_ref:obj.batchRef};
-  else dbObj={item:obj.item,cat:obj.cat,qty:obj.qty,total_cost:obj.totalCost,date:obj.date,notes:obj.notes,type:obj.type,missing_from_box:obj.missingFromBox,refund_received:obj.refundReceived,batch_num:obj.batchNum};
-  const { error } = await supabaseClient.from(table).update(dbObj).eq('id', obj.id);
-  if(error) throw error;
+  let dbObj = {};
+  if(tab === SALES_TAB) {
+    dbObj = {item:obj.item, cat:obj.cat, customer:obj.customer, qty:obj.qty, rev:obj.rev, cost:obj.cost, date:obj.date, pay:obj.pay, due:obj.due, ord:obj.ord, disc:obj.disc, notes:obj.notes, batch_ref:obj.batchRef};
+  } else {
+    dbObj = {item:obj.item, cat:obj.cat, qty:obj.qty, total_cost:obj.totalCost, date:obj.date, notes:obj.notes, type:obj.type, missing_from_box:obj.missingFromBox, refund_received:obj.refundReceived, batch_num:obj.batchNum};
+  }
+  const t = tab === SALES_TAB ? 'bms_sales' : 'bms_costs';
+  const {error} = await supabase.from(t).update(dbObj).eq('id', obj.id);
+  if(error) throw new Error(error.message);
 }
-async function deleteById(table, id){
-  const { error } = await supabaseClient.from(table).delete().eq('id', id);
-  if(error) throw error;
+
+async function deleteRowInSheet(tab, rowIdx, id){
+  const t = tab === SALES_TAB ? 'bms_sales' : 'bms_costs';
+  const {error} = await supabase.from(t).delete().eq('id', id);
+  if(error) throw new Error(error.message);
 }
 
 // ══════════════════════════════════════════════════════════
 // APP INIT
 // ══════════════════════════════════════════════════════════
 function initApp(){
-  $('conn-sheet-label').textContent=cfg.sheetId.slice(0,18)+'…';
+  $('conn-sheet-label').textContent='Supabase DB';
   populateCatSelects();
   nav('dashboard');
 }
@@ -1039,7 +927,6 @@ function renderCurrentPage(){
 function renderDashboard(){
   const catFilter=$('dash-cat-filter')?.value||'';
   let baseSales=catFilter?sales.filter(s=>s.cat===catFilter):sales;
-  baseSales=baseSales.filter(s=>s.ord!=='Cancelled');
   const filtered=filterByTime(baseSales);
   const totalRev   =filtered.reduce((a,s)=>a+(+s.rev||0),0);
   const totalProfit=filtered.reduce((a,s)=>a+profit(s),0);
@@ -1229,7 +1116,7 @@ function onSaleBatchChange(){
   const batch=costsData.find(c=>c.id===batchId);
   if(!batch)return;
   const qty=+$('f-qty')?.value||1;
-  const effQty=Math.max(0,(+batch.qty||1)-(+batch.missingFromBox||0));
+  const effQty=Math.max(1,(+batch.qty||1)-(+batch.missingFromBox||0));
   const effCost=Math.max(0,(+batch.totalCost||0)-(+batch.refundReceived||0));
   const cpu=effQty?Math.round(effCost/effQty):0;
   $('f-cost').value=cpu*qty;
@@ -1281,10 +1168,7 @@ function autoFillSaleCost(){
 }
 async function saveSale(){
   const item=$('f-item').value.trim();if(!item){toast('Item name required','error');return;}
-  let payStatus=$('f-pay-f').value;
-  let dueAmt=+$('f-due').value||0;
-  if(payStatus==='Paid' && dueAmt>0){toast('Cannot mark Paid with Due > 0','error');return;}
-  const entry={id:editId||uid(),item,cat:$('f-catf').value,customer:$('f-cust').value.trim(),qty:+$('f-qty').value||1,date:$('f-date').value,rev:+$('f-rev').value||0,cost:+$('f-cost').value||0,due:dueAmt,disc:+$('f-disc').value||0,pay:payStatus,ord:$('f-ord-f').value,notes:$('f-notes').value.trim(),batchRef:$('f-batchref')?.value||''};
+  const entry={id:editId||uid(),item,cat:$('f-catf').value,customer:$('f-cust').value.trim(),qty:+$('f-qty').value||1,date:$('f-date').value,rev:+$('f-rev').value||0,cost:+$('f-cost').value||0,due:+$('f-due').value||0,disc:+$('f-disc').value||0,pay:$('f-pay-f').value,ord:$('f-ord-f').value,notes:$('f-notes').value.trim(),batchRef:$('f-batchref')?.value||''};
   const btn=$('btn-save-sale');btn.disabled=true;showSync(true);closeModal('m-sale');
   try{
     if(editId){const ex=sales.find(s=>s.id===editId);entry._row=ex._row;await updateRow(SALES_TAB,entry._row,SALE_HEADERS,entry);const i=sales.findIndex(s=>s.id===editId);sales[i]=entry;toast('Sale updated ✦','success');}
@@ -1405,11 +1289,11 @@ $('btn-confirm-del').onclick=async function(){
   if(!pendingDeleteId||$('confirm-type-input')?.value!=='CONFIRM')return;resetConfirmInput();closeModal('m-confirm');showSync(true);
   try{
     if(pendingDeleteType==='sale'){
-      await deleteById('bms_sales', pendingDeleteId);
+      await deleteRowInSheet(SALES_TAB,pendingDeleteRow,pendingDeleteId);
       sales=sales.filter(s=>s.id!==pendingDeleteId);
       await fetchSales();toast('Sale deleted','info');
     } else {
-      await deleteById('bms_costs', pendingDeleteId);
+      await deleteRowInSheet(COSTS_TAB,pendingDeleteRow,pendingDeleteId);
       costsData=costsData.filter(c=>c.id!==pendingDeleteId);
       await fetchCosts();toast('Shipment deleted','info');
     }
@@ -1424,7 +1308,6 @@ $('btn-confirm-del').onclick=async function(){
 function getCustomers(){
   const map={};
   sales.forEach(s=>{
-    if(s.ord==='Cancelled')return;
     const k=s.customer||'—';
     if(!map[k])map[k]={name:k,orders:0,revenue:0,profit:0,due:0,last:''};
     map[k].orders++;map[k].revenue+=+s.rev||0;map[k].profit+=profit(s);map[k].due+=+s.due||0;
@@ -1494,7 +1377,7 @@ function getFIFOBatches(cat){
   const purchases=costsData.filter(c=>c.cat===cat&&(c.type||'purchase')==='purchase').sort((a,b)=>a.date.localeCompare(b.date));
   const refunds=costsData.filter(c=>c.cat===cat&&c.type==='refund');
   const missing=costsData.filter(c=>c.cat===cat&&c.type==='missing');
-  const soldQty=sales.filter(s=>s.cat===cat&&s.ord!=='Cancelled').reduce((a,s)=>a+(+s.qty||0),0);
+  const soldQty=sales.filter(s=>s.cat===cat).reduce((a,s)=>a+(+s.qty||0),0);
   const refundedQty=refunds.reduce((a,c)=>a+(+c.qty||0),0);
   const missingQty=missing.reduce((a,c)=>a+(+c.qty||0),0);
   let toDeduct=soldQty+refundedQty+missingQty;
@@ -1660,8 +1543,7 @@ function cpCancel(){$('color-popover').classList.remove('open');_cpCat=null;}
 function removeCat(cat){
   if(cat==='Other') return;
   CATS=CATS.filter(c=>c!==cat);
-  lsSet('bms_cats',JSON.stringify(CATS));
-  syncSettingsToDB();
+  localStorage.setItem('bms_cats',JSON.stringify(CATS));
   populateCatSelects();renderCatManagerList();toast(`Removed "${cat}" from new entries`,'info');
 }
 function addCat(){
@@ -1669,8 +1551,7 @@ function addCat(){
   if(!name){toast('Enter a category name','error');return;}
   if(CATS.includes(name)){toast('Already exists','error');return;}
   CATS.push(name);
-  lsSet('bms_cats',JSON.stringify(CATS));
-  syncSettingsToDB();
+  localStorage.setItem('bms_cats',JSON.stringify(CATS));
   populateCatSelects();renderCatManagerList();
   $('new-cat-input').value='';toast(`Added "${name}"` ,'success');
 }
@@ -1682,9 +1563,8 @@ function renderCosts(){
   const purchases=costsData.filter(c=>(c.type||'purchase')==='purchase');
   const refundsAll=costsData.filter(c=>c.type==='refund');
   const missingAll=costsData.filter(c=>c.type==='missing');
-  const totalInvested=purchases.reduce((a,c)=>a+Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0)),0)-refundsAll.reduce((a,c)=>a+(+c.totalCost||0),0);
-  const validSales=sales.filter(s=>s.ord!=='Cancelled');
-  const totalRev=validSales.reduce((a,s)=>a+(+s.rev||0),0);
+  const totalInvested=purchases.reduce((a,c)=>a+(+c.totalCost||0),0)-refundsAll.reduce((a,c)=>a+(+c.totalCost||0),0);
+  const totalRev=sales.reduce((a,s)=>a+(+s.rev||0),0);
   const pnl=totalRev-totalInvested;
 
   $('cost-kpi-total').textContent=fmt(totalInvested);
@@ -1722,80 +1602,62 @@ function renderCosts(){
         <button class="row-btn row-btn-del" onclick="confirmDel('${c.id}',${c._row||0},'cost')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
       </div></td>
     </tr>`;
-  }).join(''):`<tr class="empty-row"><td colspan="10"><div class="empty-icon">◇</div><div class="empty-text">No shipments yet</div><div class="empty-sub">Add your first purchase</div></td></tr>`;
+  }).join(''):`<tr class="empty-row"><td colspan="10"><div class="empty-icon">◇</div><div class="empty-text">No shipments found</div><div class="empty-sub">Add your first stock purchase</div></td></tr>`;
 
-  // Inventory tracker — EXCLUDE 'Other', use FIFO data
-  const invCats=[...new Set(costsData.filter(c=>(c.type||'purchase')==='purchase').map(c=>c.cat))].filter(c=>c!=='Other');
-  $('inv-tracker').innerHTML=invCats.map(cat=>{
-    const {totalBought,totalRemaining,soldQty}=getFIFOBatches(cat);
-    const pctVal=totalBought?Math.max(0,Math.min(100,Math.round(totalRemaining/totalBought*100))):0;
-    const col=CAT_COLORS[cat]||'#888';const remCol=totalRemaining<=0?'var(--red)':totalRemaining<=2?'var(--amber)':'var(--green)';
-    return `<div class="inv-card" style="cursor:pointer;transition:.2s" onclick="openInvDetail('${cat}')" onmouseover="this.style.borderColor='${col}'" onmouseout="this.style.borderColor='var(--border)'">
-      <div class="inv-cat-label" style="color:${col}">${cat} <span style="float:right;font-size:9px;color:var(--text3);letter-spacing:.5px;font-weight:400">Click for batches ↗</span></div>
-      <div class="inv-remaining" style="color:${remCol}">${totalRemaining} left</div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)"><span>Bought: ${totalBought}</span><span>Sold: ${soldQty}</span></div>
-      <div class="inv-bar-bg"><div class="inv-bar-fill" style="width:${pctVal}%;background:${col}"></div></div>
+  $('inv-tracker').innerHTML=CATS.filter(cat=>{const b=getFIFOBatches(cat);return b.totalBought>0||b.soldQty>0;}).map(cat=>{
+    const col=CAT_COLORS[cat]||'#888';
+    const b=getFIFOBatches(cat);
+    const p=b.totalBought?Math.min(100,Math.round(b.soldQty/b.totalBought*100)):0;
+    return `<div class="inv-card" style="cursor:pointer" onclick="openInvDetail('${escH(cat).replace(/'/g,"\\'")}')" onmouseover="this.style.borderColor='${col}';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none'">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="inv-cat-label" style="color:${col}">${escH(cat)}</div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.3"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <div><div class="inv-bought">Bought</div><div class="inv-remaining">${b.totalBought}</div></div>
+        <div style="text-align:right"><div class="inv-sold">Sold</div><div class="inv-remaining" style="color:var(--gold)">${b.soldQty}</div></div>
+      </div>
+      <div class="inv-bar-bg"><div class="inv-bar-fill" style="width:${p}%;background:${col}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9px;color:var(--text3)">
+        <span>${b.refundedQty+b.missingQty>0?`\u26A0 ${b.refundedQty+b.missingQty} adj`:''}</span>
+        <span>${b.totalRemaining} left</span>
+      </div>
     </div>`;
-  }).join('')||'<div style="color:var(--text3);font-size:12px;padding:20px">No inventory data yet.</div>';
+  }).join('');
+
+  renderStockCost();
 }
 
-// ══════════════════════════════════════════════════════════
-// COSTS PAGE TABS
-// ══════════════════════════════════════════════════════════
 function switchCostsTab(tab){
-  ['shipments','stock'].forEach(t=>{
-    const panel=$('costs-panel-'+t);
-    const btn=$('costs-tab-'+t);
-    if(panel){panel.style.display=t===tab?'':'none';}
-    if(btn){
-      btn.style.borderBottomColor=t===tab?'var(--gold)':'transparent';
-      btn.style.color=t===tab?'var(--gold)':'var(--text2)';
-      btn.style.fontWeight=t===tab?'600':'400';
-    }
-  });
-  if(tab==='stock')renderStockCost();
+  $('costs-tab-shipments').style.borderBottomColor=tab==='shipments'?'var(--gold)':'transparent';
+  $('costs-tab-shipments').style.color=tab==='shipments'?'var(--gold)':'var(--text2)';
+  $('costs-tab-shipments').style.fontWeight=tab==='shipments'?'600':'400';
+  $('costs-tab-stock').style.borderBottomColor=tab==='stock'?'var(--gold)':'transparent';
+  $('costs-tab-stock').style.color=tab==='stock'?'var(--gold)':'var(--text2)';
+  $('costs-tab-stock').style.fontWeight=tab==='stock'?'600':'400';
+  $('costs-panel-shipments').style.display=tab==='shipments'?'block':'none';
+  $('costs-panel-stock').style.display=tab==='stock'?'block':'none';
 }
 
 function renderStockCost(){
-  const cats=[...new Set(costsData.filter(c=>(c.type||'purchase')==='purchase').map(c=>c.cat))].filter(c=>c!=='Other');
-  let rows='';let globalIdx=0;
-  cats.forEach(cat=>{
-    const col=CAT_COLORS[cat]||'#888';
-    const {batches}=getFIFOBatches(cat);
-    const withStock=batches.filter(b=>b.remainingQty>0);
-    if(!withStock.length)return;
-    withStock.forEach((b,i)=>{
-      globalIdx++;
-      const stockVal=b.remainingQty*b.costPerUnit;
-      const adjustTag=b.hasAdjust
-        ?`<span style="background:var(--amber-dim);color:var(--amber);border:1px solid rgba(251,191,36,.2);border-radius:4px;padding:1px 6px;font-size:9px;margin-left:6px;font-weight:600">adjusted</span>`:'';
-      const cpuCell=b.hasAdjust
-        ?`<div style="color:var(--blue)">${fmt(b.costPerUnit)}</div><div style="font-size:10px;color:var(--text3);text-decoration:line-through">${fmt(b.origCpu)}</div>`
-        :`<span style="color:var(--blue)">${fmt(b.costPerUnit)}</span>`;
-      const batchLabel=b.batchNum?`<span style="background:var(--blue-dim);color:var(--blue);border:1px solid rgba(96,165,250,.2);border-radius:4px;padding:1px 7px;font-size:9px;font-weight:700;margin-right:5px">B${b.batchNum}</span>`:'';
-      rows+=`<tr style="animation:fadeUp .1s ${globalIdx*.03}s both;cursor:pointer" onclick="openInvDetail('${cat}')">
-        <td class="sl-cell">${globalIdx}</td>
-        <td><span style="background:${col}22;color:${col};border:1px solid ${col}44;border-radius:5px;padding:2px 9px;font-size:11px;font-weight:600">${escH(cat)}</span></td>
-        <td style="font-weight:500;font-size:12px">${batchLabel}${escH(b.item)}${adjustTag}</td>
-        <td style="color:var(--text2);font-size:11px">${b.date}</td>
-        <td class="num-cell" style="color:var(--green);font-weight:700;text-align:center">${b.remainingQty}</td>
-        <td class="num-cell">${cpuCell}</td>
-        <td class="num-cell" style="color:var(--gold)">${fmt(stockVal)}</td>
-        <td style="color:var(--text3);font-size:11px">${escH(b.notes)||'—'}</td>
-      </tr>`;
-    });
-  });
-  // Total stock value footer
-  const totalStockVal=cats.reduce((sum,cat)=>{
-    const {batches}=getFIFOBatches(cat);
-    return sum+batches.filter(b=>b.remainingQty>0).reduce((s,b)=>s+b.remainingQty*b.costPerUnit,0);
-  },0);
-  rows+=`<tr style="border-top:2px solid var(--border2)">
-    <td colspan="6" style="font-weight:600;font-size:12px;color:var(--text2);padding-left:12px">Total Stock Value</td>
-    <td class="num-cell" style="color:var(--gold);font-weight:700;font-size:14px">${fmt(totalStockVal)}</td>
-    <td></td>
-  </tr>`;
-  $('stock-cost-body').innerHTML=rows||`<tr class="empty-row"><td colspan="8"><div class="empty-icon">◇</div><div class="empty-text">No stock remaining</div></td></tr>`;
+  const activeBatches=[];
+  CATS.forEach(cat=>{const b=getFIFOBatches(cat);b.batches.forEach(batch=>{if(batch.remainingQty>0)activeBatches.push(batch);});});
+  activeBatches.sort((a,b)=>a.date.localeCompare(b.date));
+  let totalStockVal=0;
+  const rows=activeBatches.map((b,i)=>{
+    const v=b.remainingQty*b.costPerUnit;totalStockVal+=v;
+    return`<tr style="animation:fadeUp .1s ${i*.03}s both;cursor:pointer" onclick="openInvDetail('${escH(b.cat).replace(/'/g,"\\'")}')" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background=''">
+      <td class="sl-cell">${i+1}</td>
+      <td><span class="cell-cat" style="color:${CAT_COLORS[b.cat]||'var(--text2)'}">${escH(b.cat)}</span></td>
+      <td style="font-weight:500;font-size:12px">${b.batchNum?`<span style="background:var(--blue-dim);color:var(--blue);border:1px solid rgba(96,165,250,.2);border-radius:4px;padding:1px 7px;font-size:9px;font-weight:700;margin-right:6px">B${b.batchNum}</span>`:''}${escH(b.item)}</td>
+      <td class="num-cell" style="color:var(--text2);font-size:11px">${b.date}</td>
+      <td class="num-cell" style="color:var(--green)">${b.remainingQty} <span style="font-size:9px;color:var(--text3)">units</span></td>
+      <td class="num-cell" style="color:var(--blue)">${fmt(b.costPerUnit)}</td>
+      <td class="num-cell num-gold" style="font-weight:600">${fmt(v)}</td>
+      <td style="font-size:11px;color:var(--text3)">${escH(b.notes)||'—'}</td>
+    </tr>`;
+  }).join('');
+  $('stock-cost-body').innerHTML=rows+`<tr><td colspan="6" style="text-align:right;font-weight:600;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Total Current Stock Value</td><td class="num-cell num-gold" style="font-size:16px;font-weight:700">${fmt(totalStockVal)}</td><td></td></tr>`;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1840,11 +1702,10 @@ function exportCSV(){
 }
 
 function exportPDF(){
-  const validSales=sales.filter(s=>s.ord!=='Cancelled');
-  const totalRev=validSales.reduce((a,s)=>a+(+s.rev||0),0);
-  const totalProfit=validSales.reduce((a,s)=>a+profit(s),0);
-  const totalDue=validSales.reduce((a,s)=>a+(+s.due||0),0);
-  const totalInvested=costsData.filter(c=>(c.type||'purchase')==='purchase').reduce((a,c)=>a+Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0)),0) - costsData.filter(c=>c.type==='refund').reduce((a,c)=>a+(+c.totalCost||0),0);
+  const totalRev=sales.reduce((a,s)=>a+(+s.rev||0),0);
+  const totalProfit=sales.reduce((a,s)=>a+profit(s),0);
+  const totalDue=sales.reduce((a,s)=>a+(+s.due||0),0);
+  const totalInvested=costsData.filter(c=>(c.type||'purchase')==='purchase').reduce((a,c)=>a+(+c.totalCost||0),0);
   const fmtN=n=>'৳'+Number(n||0).toLocaleString('en-IN');
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>BMS Report</title><style>
@@ -1884,7 +1745,7 @@ function exportPDF(){
     </tr>`).join('')}</tbody></table>
     <h2>Purchase Shipments</h2>
     <table><thead><tr><th>#</th><th>Item</th><th>Type</th><th>Category</th><th>Qty</th><th>Total Cost</th><th>Cost/Unit</th><th>Date</th><th>Notes</th></tr></thead>
-    <tbody>${costsData.map((c,i)=>{const effQty=Math.max(0,(+c.qty||0)-(+c.missingFromBox||0));const effCost=Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0));const cpu=c.type==='missing'?0:(effQty?Math.round(effCost/effQty):0);return`<tr>
+    <tbody>${costsData.map((c,i)=>{const cpu=c.qty&&c.totalCost?Math.round(c.totalCost/c.qty):0;return`<tr>
       <td style="color:#999">${i+1}</td><td><strong>${escH(c.item)}</strong></td><td>${c.type||'purchase'}</td>
       <td>${escH(c.cat)}</td><td>${c.qty}</td><td class="red">${fmtN(c.totalCost)}</td>
       <td>${cpu?fmtN(cpu):'—'}</td><td style="color:#666">${c.date}</td><td>${escH(c.notes)||'—'}</td>
@@ -1899,7 +1760,7 @@ function exportPDF(){
 document.addEventListener('DOMContentLoaded',()=>{
   loadConfig();
   if(!cfg.clientId||!cfg.sheetId){showScreen('setup');}
-  else{populateAuthScreen();showScreen('auth');}
+  else{populateAuthScreen();initTokenClient();showScreen('auth');setTimeout(()=>$('btn-signin').click(),100);}
   populateCatSelects();
 });
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
@@ -1913,13 +1774,10 @@ document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='n'&&currentPage==='sales'){e.preventDefault();openAddSale();}
   if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
 });
-document.addEventListener('click', e => {
-  const sidebar = document.querySelector('aside');
-  const btn = document.getElementById('hamburger-btn');
-  if (sidebar.classList.contains('mobile-open') && !sidebar.contains(e.target) && !btn.contains(e.target)) {
-    sidebar.classList.remove('mobile-open');
-  }
-});
 </script>
 </body>
 </html>
+"""
+
+with open(r'd:\Antigravity\BMS\index.html', 'w', encoding='utf-8') as f:
+    f.write(html_content)

@@ -27,8 +27,7 @@ CREATE OR REPLACE FUNCTION place_order_safe(
     p_address TEXT,
     p_items JSONB,
     p_total_price NUMERIC,
-    p_shipping_fee NUMERIC,
-    p_notes TEXT
+    p_notes TEXT DEFAULT ''
 ) RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -36,7 +35,15 @@ AS $$
 DECLARE
     item JSONB;
     p_record RECORD;
+    v_shipping_fee NUMERIC;
 BEGIN
+    -- Calculate shipping fee server-side (prevents client forgery)
+    IF p_total_price > 2000 THEN
+        v_shipping_fee := 0;
+    ELSE
+        v_shipping_fee := 80;
+    END IF;
+
     -- Step 1: Check stock for all items BEFORE inserting
     FOR item IN SELECT * FROM jsonb_array_elements(p_items)
     LOOP
@@ -49,9 +56,9 @@ BEGIN
         END IF;
     END LOOP;
 
-    -- Step 2: Insert the order (Pending state)
+    -- Step 2: Insert the order (Pending state) using server-calculated shipping fee
     INSERT INTO orders (id, customer_id, customer_name, phone, address, items, total_price, shipping_fee, status, notes)
-    VALUES (p_order_id, p_customer_id, p_customer_name, p_phone, p_address, p_items, p_total_price, p_shipping_fee, 'Pending', p_notes);
+    VALUES (p_order_id, p_customer_id, p_customer_name, p_phone, p_address, p_items, p_total_price, v_shipping_fee, 'Pending', p_notes);
 
     -- Step 3: Deduct stock immediately to prevent double-selling
     FOR item IN SELECT * FROM jsonb_array_elements(p_items)
@@ -171,10 +178,31 @@ CREATE POLICY "Allow public read access" ON products FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Allow admin write access" ON products;
 CREATE POLICY "Allow admin write access" ON products FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
--- B) Customers Table: Allow public to login/signup
+-- B) Customers Table: Secure per-user access via Supabase Auth
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow public customer access" ON customers;
-CREATE POLICY "Allow public customer access" ON customers FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Open customer access" ON customers;
+
+-- 1. Read Policy: Customers can only SELECT their own record
+CREATE POLICY "Customers can select own record" 
+ON customers FOR SELECT 
+USING (auth.uid() = id);
+
+-- 2. Write Policy: Customers can only UPDATE their own profile fields
+CREATE POLICY "Customers can update own record" 
+ON customers FOR UPDATE 
+USING (auth.uid() = id)
+WITH CHECK (auth.uid() = id);
+
+-- 3. Delete Policy: Customers can only DELETE their own record
+CREATE POLICY "Customers can delete own record" 
+ON customers FOR DELETE 
+USING (auth.uid() = id);
+
+-- 4. Sign-Up Policy: Allow guest/anonymous user insertion during sign-up
+CREATE POLICY "Enable insert access for registration"
+ON customers FOR INSERT
+WITH CHECK (true);
 
 -- C) Orders Table: Allow public to place and view orders
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
@@ -188,3 +216,39 @@ GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 
+-- ==========================================
+-- PHASE 5: WISHLIST SYSTEM
+-- ==========================================
+
+-- A) Wishlists Table
+CREATE TABLE IF NOT EXISTS wishlists (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+    product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(customer_id, product_id)
+);
+
+-- B) Wishlist Security Policies
+ALTER TABLE wishlists ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Customers can view own wishlist"
+ON wishlists FOR SELECT
+USING (auth.uid() = customer_id);
+
+CREATE POLICY "Customers can add to wishlist"
+ON wishlists FOR INSERT
+WITH CHECK (auth.uid() = customer_id);
+
+CREATE POLICY "Customers can remove from wishlist"
+ON wishlists FOR DELETE
+USING (auth.uid() = customer_id);
+
+-- C) Cleanup Cron Function (Phase 5.3)
+CREATE OR REPLACE FUNCTION delete_stale_wishlists()
+RETURNS void AS $$
+BEGIN
+    -- Delete wishlist items older than 30 days
+    DELETE FROM wishlists WHERE created_at < NOW() - INTERVAL '30 days';
+END;
+$$ LANGUAGE plpgsql;

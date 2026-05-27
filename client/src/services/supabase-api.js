@@ -8,8 +8,7 @@ import { supabase } from './supabase';
 
 // ── Helpers ───────────────────────────────────────────────────
 function hashPassword(password) {
-    // Simple hash for client-side auth (not crypto-grade, but matches
-    // the current Apps Script approach — passwords stored as hashes)
+    // Legacy hash for backward-compat (used by manual auth before Supabase Auth migration)
     let hash = 0;
     for (let i = 0; i < password.length; i++) {
         const char = password.charCodeAt(i);
@@ -17,6 +16,81 @@ function hashPassword(password) {
         hash |= 0;
     }
     return 'h_' + Math.abs(hash).toString(36);
+}
+
+// ══════════════════════════════════════════════════════════════
+// SUPABASE AUTH (Phase 2 — replaces manual hash-based auth)
+// ══════════════════════════════════════════════════════════════
+
+// 2.1 Google OAuth
+export async function signInWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.origin + '/profile',
+            queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+            },
+        },
+    });
+    if (error) throw new Error(error.message);
+    return data;
+}
+
+// 2.2 Email OTP — Send Code
+export async function sendOtpCode(email) {
+    const { error } = await supabase.auth.signInWithOtp({
+        email: email.toLowerCase().trim(),
+        options: {
+            shouldCreateUser: true,
+        }
+    });
+    if (error) throw new Error(error.message);
+    return { success: true };
+}
+
+// 2.2 Email OTP — Verify Code
+export async function verifyOtpCode(email, token) {
+    const { data, error } = await supabase.auth.verifyOtp({
+        email: email.toLowerCase().trim(),
+        token: token.trim(),
+        type: 'email',
+    });
+    if (error) throw new Error(error.message);
+    return { success: true, session: data.session, user: data.user };
+}
+
+// 2.3 Password Recovery — Send Reset Email
+export async function sendPasswordResetEmail(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password',
+    });
+    if (error) throw new Error(error.message);
+    return { success: true };
+}
+
+// 2.3 Password Recovery — Update Password
+export async function updatePassword(newPassword) {
+    const { error } = await supabase.auth.updateUser({
+        password: newPassword
+    });
+    if (error) throw new Error(error.message);
+    return { success: true };
+}
+
+// Get current Supabase Auth session
+export async function getAuthSession() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw new Error(error.message);
+    return session;
+}
+
+// Sign out from Supabase Auth
+export async function signOutAuth() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw new Error(error.message);
+    return { success: true };
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -113,7 +187,6 @@ export async function updateCustomerProfile(customerId, updates) {
 
 export async function submitOrder({ customerId, customerName, phone, address, items, totalPrice, notes }) {
     const orderId = 'ORD-' + Date.now();
-    const shippingFee = totalPrice > 2000 ? 0 : 80;
 
     const { data, error } = await supabase.rpc('place_order_safe', {
         p_order_id: orderId,
@@ -123,7 +196,6 @@ export async function submitOrder({ customerId, customerName, phone, address, it
         p_address: address,
         p_items: items,
         p_total_price: totalPrice,
-        p_shipping_fee: shippingFee,
         p_notes: notes || ''
     });
 
@@ -444,4 +516,40 @@ export async function fetchInventory() {
 export async function fetchCategories() {
     const products = await fetchProducts();
     return [...new Set(products.map(p => p.category).filter(Boolean))];
+}
+
+// ══════════════════════════════════════════════════════════════
+// WISHLIST (Phase 5)
+// ══════════════════════════════════════════════════════════════
+
+export async function fetchWishlist(customerId) {
+    if (!customerId) return [];
+    const { data, error } = await supabase
+        .from('wishlists')
+        .select('product_id')
+        .eq('customer_id', customerId);
+    
+    if (error) throw new Error(error.message);
+    return data.map(w => w.product_id);
+}
+
+export async function addToWishlist(customerId, productId) {
+    if (!customerId || !productId) throw new Error('Missing customer or product ID');
+    const { error } = await supabase
+        .from('wishlists')
+        .insert({ customer_id: customerId, product_id: productId });
+    
+    if (error && error.code !== '23505') throw new Error(error.message); // Ignore unique violation
+    return true;
+}
+
+export async function removeFromWishlist(customerId, productId) {
+    if (!customerId || !productId) return false;
+    const { error } = await supabase
+        .from('wishlists')
+        .delete()
+        .match({ customer_id: customerId, product_id: productId });
+    
+    if (error) throw new Error(error.message);
+    return true;
 }

@@ -1,0 +1,95 @@
+.floating-chat-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.chat-trigger-fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c9a853, #a78bfa);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(167, 139, 250, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+}
+
+.chat-trigger-fab:hover {
+    transform: scale(1.1);
+}
+
+.chat-trigger-fab.active {
+    transform: rotate(135deg);
+    background: #1c1c32;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.chat-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px) scale(0.9);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.chat-options.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.chat-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 20px;
+    background: var(--bg2, #1c1c32);
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+.chat-option-btn:hover {
+    background: var(--btn-color);
+    border-color: transparent;
+    transform: translateX(-4px);
+}
+
+.chat-option-btn .btn-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.chat-option-btn .btn-name {
+    letter-spacing: 0.3px;
+}
+
+@media (max-width: 480px) {
+    .floating-chat-container {
+        bottom: 16px;
+        right: 16px;
+    }
+    .chat-trigger-fab {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+}

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { loginCustomer, registerCustomer, updateCustomerProfile } from '../services/supabase-api';
+import { loginCustomer, registerCustomer, updateCustomerProfile, signOutAuth } from '../services/supabase-api';
+import { supabase } from '../services/supabase';
 
 const CustomerContext = createContext();
 
@@ -10,15 +11,65 @@ export const CustomerProvider = ({ children }) => {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null; }
         catch { return null; }
     });
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const isLoggedIn = Boolean(customer?.id);
 
     const saveCustomer = (data) => {
         setCustomer(data);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        if (data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } else {
+            localStorage.removeItem(STORAGE_KEY);
+        }
     };
+
+    useEffect(() => {
+        // Listen to Supabase Auth state changes for OAuth and OTP users
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session?.user) {
+                try {
+                    const { data } = await supabase
+                        .from('customers')
+                        .select('*')
+                        .eq('email', session.user.email)
+                        .maybeSingle();
+
+                    if (data) {
+                        saveCustomer(data);
+                    } else if (session.user.email) {
+                        // Create profile for new OAuth / OTP user
+                        const { data: newProfile } = await supabase
+                            .from('customers')
+                            .insert({
+                                email: session.user.email,
+                                name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+                                password_hash: 'oauth_or_otp'
+                            })
+                            .select()
+                            .single();
+                        
+                        if (newProfile) saveCustomer(newProfile);
+                    }
+                } catch (err) {
+                    console.error('Error handling auth state change:', err);
+                }
+            } else if (event === 'SIGNED_OUT') {
+                saveCustomer(null);
+            }
+            setLoading(false);
+        });
+
+        // Ensure loading state resolves
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                setLoading(false);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     const login = async ({ email, password }) => {
         setLoading(true); setError(null);
@@ -44,9 +95,15 @@ export const CustomerProvider = ({ children }) => {
         } finally { setLoading(false); }
     };
 
-    const logout = () => {
-        setCustomer(null);
-        localStorage.removeItem(STORAGE_KEY);
+    const logout = async () => {
+        setLoading(true);
+        try {
+            await signOutAuth();
+        } catch (e) {
+            console.error('Sign out error', e);
+        }
+        saveCustomer(null);
+        setLoading(false);
     };
 
     const updateProfile = async (updates) => {

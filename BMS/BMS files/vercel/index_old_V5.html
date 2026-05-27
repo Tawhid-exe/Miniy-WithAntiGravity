@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://accounts.google.com/gsi/client" async></script>
 <style>
 :root{
   --bg:#09090f;--bg2:#0d0d17;--card:#111120;--card2:#161628;
@@ -29,9 +29,6 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 ::selection{background:var(--gold-dim);color:var(--gold2)}
-input[type=color]{-webkit-appearance:none;appearance:none;border:none;cursor:pointer}
-input[type=color]::-webkit-color-swatch-wrapper{padding:0}
-input[type=color]::-webkit-color-swatch{border:none;border-radius:50%}
 button{font-family:'DM Sans',sans-serif;cursor:pointer;border:none;outline:none;transition:.15s}
 input,select,textarea{font-family:'DM Sans',sans-serif;outline:none}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -109,7 +106,7 @@ input,select,textarea{font-family:'DM Sans',sans-serif;outline:none}
 .time-filter-select option{background:var(--card)}
 
 /* ── KPI Cards ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;transition:.2s}
 .kpi-card:hover{border-color:var(--border2)}
 .kpi-card::before{content:'';position:absolute;inset:0;opacity:0;transition:.3s;background:radial-gradient(ellipse at 100% 0%,var(--accent-glow,var(--gold-dim)) 0%,transparent 70%)}
@@ -270,65 +267,15 @@ tr:hover .row-actions{opacity:1}
 .toast-error .toast-dot{background:var(--red);box-shadow:0 0 8px var(--red)}
 .toast-info .toast-dot{background:var(--gold);box-shadow:0 0 8px var(--gold)}
 .spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-/* ── Custom colour picker popover ── */
-#color-popover{position:fixed;z-index:9999;background:var(--card2);border:1px solid var(--border2);border-radius:14px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.7);width:220px;display:none}
-#color-popover.open{display:block}
-#color-popover-hue{width:100%;height:14px;border-radius:7px;border:none;cursor:pointer;margin-bottom:10px;background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);-webkit-appearance:none;appearance:none}
-#color-popover-hue::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,.4);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.4)}
-#color-popover-hex{width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:13px;margin-bottom:10px;text-align:center}
-#color-popover-preview{height:36px;border-radius:8px;margin-bottom:10px;border:1px solid rgba(255,255,255,.1);transition:.15s}
 #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9998;gap:16px}
 #loading.hidden{display:none}
 .loading-mark{font-family:'Cinzel',serif;color:var(--gold);font-size:48px;animation:pulse 2s infinite}
 .loading-text{color:var(--text2);font-size:13px;letter-spacing:1px}
 @media(max-width:900px){.sidebar{display:none}.kpi-grid{grid-template-columns:repeat(2,1fr)}.charts-row,.charts-row2{grid-template-columns:1fr}.page-content{padding:16px}.topbar{padding:14px 16px}.filter-grid{grid-template-columns:1fr 1fr}}
-/* --- Phase 3.2: Mobile App Optimization --- */
-@media (max-width: 900px) {
-  aside {
-    position: fixed;
-    left: 0; top: 0; bottom: 0;
-    transform: translateX(-100%);
-    z-index: 9999;
-    box-shadow: 4px 0 20px rgba(0,0,0,0.5);
-    transition: transform 0.3s ease;
-  }
-  aside.mobile-open { transform: translateX(0); }
-  .main { margin-left: 0; width: 100%; max-width: 100vw; overflow-x: hidden; }
-  .topbar { padding: 12px 16px; }
-  #hamburger-btn { display: flex !important; margin-right: 12px; }
-  
-  /* Make all tables scrollable horizontally to preserve layout on mobile */
-  .main table { display: block; overflow-x: auto; white-space: nowrap; }
-}
-#hamburger-btn {
-  display: none;
-  background: transparent;
-  border: none;
-  color: var(--text);
-  padding: 4px;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-}
 </style>
 </head>
 <body>
 <div id="loading"><div class="loading-mark">✦</div><div class="loading-text">Loading BMS...</div></div>
-<!-- Colour Picker Popover -->
-<div id="color-popover">
-  <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;font-weight:600" id="color-popover-label">Pick Colour</div>
-  <div id="color-popover-preview"></div>
-  <input type="range" id="color-popover-hue" min="0" max="360" value="0" oninput="cpHueChange(this.value)">
-  <div style="display:flex;gap:8px;margin-bottom:10px">
-    <input id="color-popover-sat" type="range" min="0" max="100" value="70" oninput="cpUpdate()" style="flex:1;height:10px;border-radius:5px;-webkit-appearance:none;appearance:none;cursor:pointer;border:none">
-    <input id="color-popover-lit" type="range" min="5" max="90" value="50" oninput="cpUpdate()" style="flex:1;height:10px;border-radius:5px;-webkit-appearance:none;appearance:none;cursor:pointer;border:none">
-  </div>
-  <input id="color-popover-hex" placeholder="#c9a853" oninput="cpHexInput(this.value)">
-  <div style="display:flex;gap:8px;margin-top:4px">
-    <button onclick="cpCancel()" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;cursor:pointer">Cancel</button>
-    <button onclick="cpConfirm()" style="flex:1;padding:8px;border-radius:8px;background:var(--gold);border:none;color:#0a0808;font-weight:700;font-size:12px;cursor:pointer">✓ Confirm</button>
-  </div>
-</div>
 <div id="toast-stack"></div>
 
 <!-- Setup -->
@@ -337,11 +284,11 @@ tr:hover .row-actions{opacity:1}
   <div class="auth-card">
     <div class="auth-brand"><div class="auth-mark">BMS</div><div class="auth-sub">Products Manager</div></div>
     <div id="setup-err" class="err-msg" style="display:none"></div>
-    <div class="form-group"><label class="form-label">Supabase Project URL</label><input id="inp-client-id" class="form-input" placeholder="https://xxxx.supabase.co"></div>
+    <div class="form-group"><label class="form-label">Google OAuth Client ID</label><input id="inp-client-id" class="form-input" placeholder="xxxxxxxxx.apps.googleusercontent.com"></div>
     <div class="form-group">
-      <label class="form-label">Supabase Anon Key</label>
-      <input id="inp-sheet-id" class="form-input" placeholder="eyJhbGciOiJIUzI1NiIs...">
-      <div style="font-size:11px;color:var(--text3);margin-top:6px">Find this in your Supabase API settings</div>
+      <label class="form-label">Google Sheet ID</label>
+      <input id="inp-sheet-id" class="form-input" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">From your Sheet URL — the long ID in the middle</div>
     </div>
     <button class="btn-primary" onclick="saveSetup()">Continue →</button>
   </div>
@@ -354,14 +301,14 @@ tr:hover .row-actions{opacity:1}
     <div class="auth-brand"><div class="auth-mark">BMS</div><div class="auth-sub">Products Manager</div></div>
     <div id="auth-err" class="err-msg" style="display:none"></div>
     <div class="auth-info">
-      <div class="auth-info-row"><span class="auth-info-label">Project URL</span><span class="auth-info-val" id="disp-client-id">—</span></div>
-      <div class="auth-info-row" style="margin-top:6px"><span class="auth-info-label">Anon Key</span><span class="auth-info-val" id="disp-sheet-id">—</span></div>
+      <div class="auth-info-row"><span class="auth-info-label">Client ID</span><span class="auth-info-val" id="disp-client-id">—</span></div>
+      <div class="auth-info-row" style="margin-top:6px"><span class="auth-info-label">Sheet ID</span><span class="auth-info-val" id="disp-sheet-id">—</span></div>
     </div>
     <button class="btn-primary" id="btn-signin" onclick="signIn()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-      Connect to Supabase
+      Connect with Google Sheets
     </button>
-    <div class="auth-status"><div class="status-dot green"></div><span>Connected to PostgreSQL</span></div>
+    <div class="auth-status"><div class="status-dot green"></div><span>Data lives in your Google Sheet · Anywhere, anytime</span></div>
     <div style="text-align:center;margin-top:16px"><button class="btn-ghost" onclick="resetSetup()">Change settings</button></div>
   </div>
 </div>
@@ -418,9 +365,6 @@ tr:hover .row-actions{opacity:1}
 
   <div class="main">
     <div class="topbar">
-      <button id="hamburger-btn" onclick="document.querySelector('aside').classList.toggle('mobile-open')">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
       <div class="page-title" id="topbar-title">Dashboard</div>
       <div class="topbar-right">
         <div id="sync-indicator" style="font-size:11px;color:var(--text3);display:none;align-items:center;gap:6px"><div class="spinner" style="width:12px;height:12px"></div> Saving...</div>
@@ -472,11 +416,6 @@ tr:hover .row-actions{opacity:1}
             <div class="kpi-label">Outstanding Due</div><div class="kpi-value" id="kpi-due">৳0</div><div class="kpi-sub" id="kpi-due-sub">—</div>
             <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
             <div class="kpi-bar" style="width:40%;background:linear-gradient(90deg,var(--red),transparent)"></div>
-          </div>
-          <div class="kpi-card" style="--kpi-color:var(--teal);--accent-bg:var(--teal-dim);--accent-glow:rgba(45,212,191,.15)">
-            <div class="kpi-label">Avg Order Value</div><div class="kpi-value" id="kpi-aov">৳0</div><div class="kpi-sub" id="kpi-aov-sub">—</div>
-            <div class="kpi-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-            <div class="kpi-bar" style="width:55%;background:linear-gradient(90deg,var(--teal),transparent)"></div>
           </div>
         </div>
         <div class="charts-row">
@@ -573,7 +512,7 @@ tr:hover .row-actions{opacity:1}
             <div class="table-scroll">
               <table><thead><tr>
                 <th class="no-sort" style="width:36px">#</th>
-                <th class="no-sort">Item</th><th class="no-sort">Batch #</th><th class="no-sort">Type</th><th class="no-sort">Category</th><th class="no-sort">Qty</th>
+                <th class="no-sort">Item</th><th class="no-sort">Type</th><th class="no-sort">Category</th><th class="no-sort">Qty</th>
                 <th class="no-sort">Total Cost</th><th class="no-sort">Cost / Unit</th>
                 <th class="no-sort">Date</th><th class="no-sort">Notes</th><th class="no-sort"></th>
               </tr></thead><tbody id="costs-table-body"></tbody></table>
@@ -695,16 +634,13 @@ tr:hover .row-actions{opacity:1}
 
 <!-- Confirm Modal -->
 <div class="modal-overlay" id="m-confirm">
-  <div class="modal" style="max-width:380px">
+  <div class="modal">
     <div class="confirm-icon">⚠</div>
     <div class="confirm-title">Delete this entry?</div>
-    <div class="confirm-text">This will permanently remove it from your Google Sheet and <strong style="color:var(--red)">cannot be undone</strong>.<br><br>Type <strong style="color:var(--gold);letter-spacing:2px">CONFIRM</strong> below to proceed.</div>
-    <div style="margin-bottom:20px">
-      <input id="confirm-type-input" class="field-input" placeholder="Type CONFIRM here…" autocomplete="off" oninput="onConfirmType()" onpaste="return false" style="text-align:center;font-weight:700;letter-spacing:2px;font-size:14px">
-    </div>
+    <div class="confirm-text">This will permanently remove it from your Google Sheet. Cannot be undone.</div>
     <div class="confirm-actions">
-      <button class="btn-cancel" onclick="closeModal('m-confirm');resetConfirmInput()">Cancel</button>
-      <button class="btn-danger" id="btn-confirm-del" disabled style="opacity:.35;cursor:not-allowed">Delete</button>
+      <button class="btn-cancel" onclick="closeModal('m-confirm')">Cancel</button>
+      <button class="btn-danger" id="btn-confirm-del">Delete</button>
     </div>
   </div>
 </div>
@@ -738,7 +674,7 @@ tr:hover .row-actions{opacity:1}
 
 <!-- Inventory Detail Modal -->
 <div class="modal-overlay" id="m-inv-detail">
-  <div class="modal" style="max-width:920px;width:min(920px,96vw)">
+  <div class="modal" style="max-width:580px">
     <div class="modal-header">
       <div class="modal-title" id="inv-detail-title">Batch Detail</div>
       <button class="modal-close" onclick="closeModal('m-inv-detail')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
@@ -749,29 +685,20 @@ tr:hover .row-actions{opacity:1}
 
 <script>
 // ══════════════════════════════════════════════════════════
-// SAFE LOCALSTORAGE (Brave blocks localStorage on file:// URLs)
-// ══════════════════════════════════════════════════════════
-const _lsMem = {};
-function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return _lsMem[k]||null; } }
-function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){ _lsMem[k]=String(v); } }
-function lsRem(k){ try { localStorage.removeItem(k); } catch(e){ delete _lsMem[k]; } }
-// ══════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════
 const DEFAULT_CATS = ['Rings','Claw','Bangle','Mirror','Hairpin','Gift','Other'];
-const CAT_COLORS_DEFAULT = {Rings:'#c9a853',Claw:'#a78bfa','Fish Claw':'#2dd4bf','Goth Claw':'#f472b6','Mini Claw':'#818cf8',Bangle:'#4ade80',Mirror:'#60a5fa',Hairpin:'#fb923c',Pin:'#facc15',Gift:'#f87171',Other:'#6b7280'};
-let CAT_COLORS = {...CAT_COLORS_DEFAULT,...JSON.parse(lsGet('bms_cat_colors')||'{}')};
-function saveCatColors(){lsSet('bms_cat_colors',JSON.stringify(CAT_COLORS));if(typeof syncSettingsToDB==='function')syncSettingsToDB();}
-function getCatColor(cat){return CAT_COLORS[cat]||null;}
-let CATS = JSON.parse(lsGet('bms_cats') || JSON.stringify(DEFAULT_CATS));
+const CAT_COLORS = {Rings:'#c9a853',Claw:'#a78bfa','Fish Claw':'#2dd4bf','Goth Claw':'#f472b6','Mini Claw':'#818cf8',Bangle:'#4ade80',Mirror:'#60a5fa',Hairpin:'#fb923c',Pin:'#facc15',Gift:'#f87171',Other:'#6b7280'};
+let CATS = JSON.parse(localStorage.getItem('bms_cats') || JSON.stringify(DEFAULT_CATS));
 const SALE_HEADERS  = ['id','item','cat','customer','qty','rev','cost','date','pay','due','ord','disc','notes','batchRef'];
 const COST_HEADERS  = ['id','item','cat','qty','totalCost','date','notes','type','missingFromBox','refundReceived','batchNum'];
 const SALES_TAB = 'Sales';
 const COSTS_TAB = 'Costs';
+const BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 const fmt  = n => '৳' + Number(n||0).toLocaleString('en-IN');
 const pct  = (a,b) => b ? Math.round(a/b*100)+'%' : '0%';
-const profit = s => (parseFloat(s.rev)||0) - (parseFloat(s.cost)||0) - (parseFloat(s.disc)||0);
+const profit = s => (parseFloat(s.rev)||0) - (parseFloat(s.cost)||0);
 const $    = id => document.getElementById(id);
 const today= () => new Date().toISOString().slice(0,10);
 const escH = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -790,6 +717,8 @@ function renderBatchBadge(batchId){
 // STATE
 // ══════════════════════════════════════════════════════════
 let cfg = {clientId:'',sheetId:''};
+let accessToken = '';
+let tokenClient = null;
 let sales = [];
 let costsData = [];
 let currentPage = 'dashboard';
@@ -905,104 +834,106 @@ function populateCatSelects(){
   }
 }
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // CONFIG + AUTH
-// ══════════════════════════════════════════════════════════════
-let supabaseClient = null;
-function loadConfig(){cfg.clientId=lsGet('bms_supabase_url')||'';cfg.sheetId=lsGet('bms_supabase_key')||'';}
+// ══════════════════════════════════════════════════════════
+function loadConfig(){cfg.clientId=localStorage.getItem('bms_client_id')||'';cfg.sheetId=localStorage.getItem('bms_sheet_id')||'';}
 function saveSetup(){
   const cid=$('inp-client-id').value.trim();const sid=$('inp-sheet-id').value.trim();
   if(!cid||!sid){showErr('setup-err','Fill in both fields.');return;}
-  lsSet('bms_supabase_url',cid);lsSet('bms_supabase_key',sid);
-  cfg.clientId=cid;cfg.sheetId=sid;hideErr('setup-err');showScreen('auth');populateAuthScreen();
+  localStorage.setItem('bms_client_id',cid);localStorage.setItem('bms_sheet_id',sid);
+  cfg.clientId=cid;cfg.sheetId=sid;hideErr('setup-err');initTokenClient();showScreen('auth');populateAuthScreen();
 }
 function populateAuthScreen(){const t=s=>s.length>30?s.slice(0,16)+'…'+s.slice(-8):s;$('disp-client-id').textContent=t(cfg.clientId);$('disp-sheet-id').textContent=t(cfg.sheetId);}
-function resetSetup(){supabaseClient=null;lsSet('bms_supabase_url','');lsSet('bms_supabase_key','');cfg.clientId='';cfg.sheetId='';showScreen('setup');}
+function resetSetup(){accessToken='';tokenClient=null;showScreen('auth');populateAuthScreen();}
 function showErr(id,msg){const e=$(id);e.style.display='block';e.textContent=msg;}
 function hideErr(id){$(id).style.display='none';}
 
+function initTokenClient(){
+  if(!cfg.clientId||typeof google==='undefined'){setTimeout(initTokenClient,200);return;}
+  tokenClient=google.accounts.oauth2.initTokenClient({client_id:cfg.clientId,scope:'https://www.googleapis.com/auth/spreadsheets',callback:onToken});
+}
 async function signIn(){
   hideErr('auth-err');const btn=$('btn-signin');btn.disabled=true;
   btn.innerHTML='<div class="spinner" style="border-color:rgba(0,0,0,.2);border-top-color:#0a0808"></div> Connecting…';
-  try {
-    supabaseClient = supabase.createClient(cfg.clientId, cfg.sheetId);
-    $('loading').classList.remove('hidden');
-    await Promise.all([fetchSettings(),fetchSales(),fetchCosts()]);
-    initApp();showScreen('app');
-  } catch(e) {
-    $('loading').classList.add('hidden');
-    btn.disabled=false;btn.innerHTML='Connect to Supabase';
-    showErr('auth-err','Auth failed: '+e.message);
+  try{if(!tokenClient){initTokenClient();await new Promise(r=>setTimeout(r,500));}tokenClient.requestAccessToken({prompt:''});}
+  catch(e){btn.disabled=false;btn.innerHTML='Connect with Google Sheets';showErr('auth-err','Auth failed: '+e.message);}
+}
+async function onToken(resp){
+  const btn=$('btn-signin');btn.disabled=false;btn.innerHTML='Connect with Google Sheets';
+  if(resp.error){showErr('auth-err','Google auth error: '+resp.error);return;}
+  accessToken=resp.access_token;$('loading').classList.remove('hidden');
+  try{await ensureSheets();await Promise.all([fetchSales(),fetchCosts()]);initApp();showScreen('app');}
+  catch(e){$('loading').classList.add('hidden');showErr('auth-err','Could not load data: '+e.message);}
+}
+
+// ══════════════════════════════════════════════════════════
+// SHEETS API
+// ══════════════════════════════════════════════════════════
+async function sheetsReq(path,method='GET',body=null){
+  const opts={method,headers:{Authorization:`Bearer ${accessToken}`}};
+  if(body){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body);}
+  const r=await fetch(`${BASE}/${cfg.sheetId}${path}`,opts);
+  if(!r.ok){const err=await r.json().catch(()=>({error:{message:r.statusText}}));throw new Error(err.error?.message||r.statusText);}
+  return r.json();
+}
+
+async function ensureSheets(){
+  // Ensure Sales tab
+  const sd=await sheetsReq(`/values/${SALES_TAB}!A1:A1`).catch(()=>null);
+  if(!sd||!sd.values||sd.values[0]?.[0]!=='id'){
+    await sheetsReq(`/values/${SALES_TAB}!A1:M1?valueInputOption=RAW`,'PUT',{range:`${SALES_TAB}!A1:M1`,values:[SALE_HEADERS]});
+  }
+  // Ensure Costs tab
+  const cd=await sheetsReq(`/values/${COSTS_TAB}!A1:A1`).catch(()=>null);
+  if(!cd||!cd.values||cd.values[0]?.[0]!=='id'){
+    await sheetsReq(`/values/${COSTS_TAB}!A1:J1?valueInputOption=RAW`,'PUT',{range:`${COSTS_TAB}!A1:J1`,values:[COST_HEADERS]});
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-// SUPABASE API
-// ══════════════════════════════════════════════════════════════
-async function fetchSettings(){
-  try{
-    const { data, error } = await supabaseClient.from('bms_settings').select('*').eq('id', 'global').maybeSingle();
-    if(!error && data){
-      CATS = (data.cats && data.cats.length > 0) ? data.cats : DEFAULT_CATS;
-      CAT_COLORS = {...CAT_COLORS_DEFAULT, ...(data.colors || {})};
-      lsSet('bms_cats', JSON.stringify(CATS));
-      lsSet('bms_cat_colors', JSON.stringify(CAT_COLORS));
-    }
-  }catch(e){ console.error("fetchSettings error:", e); }
-}
-async function syncSettingsToDB(){
-  if(!supabaseClient)return;
-  const { error } = await supabaseClient.from('bms_settings').upsert({ id: 'global', cats: CATS, colors: CAT_COLORS });
-  if (error) console.error("Sync error:", error);
-}
 async function fetchSales(){
-  const { data, error } = await supabaseClient.from('bms_sales').select('*').order('created_at', { ascending: true });
-  if (error) throw error;
-  const rows = data || [];
-  if(rows.length===0){sales=SAMPLE_SALES;await bulkWriteSales();return;}
-  sales=rows.map((r,i)=>({_row:i+2,id:r.id||uid(),item:r.item||'',cat:r.cat||'Rings',customer:r.customer||'',qty:+r.qty||1,rev:+r.rev||0,cost:+r.cost||0,date:r.date||'',pay:r.pay||'Paid',due:+r.due||0,ord:r.ord||'Completed',disc:+r.disc||0,notes:r.notes||'',batchRef:r.batch_ref||''}));
+  const d=await sheetsReq(`/values/${SALES_TAB}`);
+  const rows=d.values||[];
+  if(rows.length<=1){sales=SAMPLE_SALES;await bulkWriteSales();return;}
+  sales=rows.slice(1).map((r,i)=>({_row:i+2,id:r[0]||uid(),item:r[1]||'',cat:r[2]||'Rings',customer:r[3]||'',qty:+r[4]||1,rev:+r[5]||0,cost:+r[6]||0,date:r[7]||'',pay:r[8]||'Paid',due:+r[9]||0,ord:r[10]||'Completed',disc:+r[11]||0,notes:r[12]||'',batchRef:r[13]||''}));
 }
 
 async function fetchCosts(){
-  const { data, error } = await supabaseClient.from('bms_costs').select('*').order('created_at', { ascending: true });
-  if (error) throw error;
-  const rows = data || [];
-  if(rows.length===0){costsData=SAMPLE_COSTS;await bulkWriteCosts();return;}
-  costsData=rows.map((r,i)=>({_row:i+2,id:r.id||uid(),item:r.item||'',cat:r.cat||'Other',qty:+r.qty||1,totalCost:+r.total_cost||0,date:r.date||'',notes:r.notes||'',type:r.type||'purchase',missingFromBox:+r.missing_from_box||0,refundReceived:+r.refund_received||0,batchNum:+r.batch_num||0}));
+  const d=await sheetsReq(`/values/${COSTS_TAB}`).catch(()=>({values:[]}));
+  const rows=d.values||[];
+  if(rows.length<=1){costsData=SAMPLE_COSTS;await bulkWriteCosts();return;}
+  costsData=rows.slice(1).map((r,i)=>({_row:i+2,id:r[0]||uid(),item:r[1]||'',cat:r[2]||'Other',qty:+r[3]||1,totalCost:+r[4]||0,date:r[5]||'',notes:r[6]||'',type:r[7]||'purchase',missingFromBox:+r[8]||0,refundReceived:+r[9]||0,batchNum:+r[10]||0}));
 }
 
 async function refreshData(){showSync(true);try{await Promise.all([fetchSales(),fetchCosts()]);renderCurrentPage();toast('Refreshed','success');}catch(e){toast('Refresh failed: '+e.message,'error');}showSync(false);}
 
 async function bulkWriteSales(){
-  const rows=sales.map(s=>({id:s.id,item:s.item,cat:s.cat,customer:s.customer,qty:s.qty,rev:s.rev,cost:s.cost,date:s.date,pay:s.pay,due:s.due,ord:s.ord,disc:s.disc,notes:s.notes,batch_ref:s.batchRef}));
-  await supabaseClient.from('bms_sales').insert(rows);
+  const rows=sales.map(s=>SALE_HEADERS.map(h=>s[h]??''));
+  await sheetsReq(`/values/${SALES_TAB}!A2:M${rows.length+1}?valueInputOption=RAW`,'PUT',{range:`${SALES_TAB}!A2:M${rows.length+1}`,values:rows});
   await fetchSales();
 }
 async function bulkWriteCosts(){
-  const rows=costsData.map(c=>({id:c.id,item:c.item,cat:c.cat,qty:c.qty,total_cost:c.totalCost,date:c.date,notes:c.notes,type:c.type,missing_from_box:c.missingFromBox,refund_received:c.refundReceived,batch_num:c.batchNum}));
-  await supabaseClient.from('bms_costs').insert(rows);
+  const rows=costsData.map(c=>COST_HEADERS.map(h=>c[h]??''));
+  await sheetsReq(`/values/${COSTS_TAB}!A2:H${rows.length+1}?valueInputOption=RAW`,'PUT',{range:`${COSTS_TAB}!A2:H${rows.length+1}`,values:rows});
   await fetchCosts();
 }
 
 async function appendRow(tab,headers,obj){
-  const table = tab === SALES_TAB ? 'bms_sales' : 'bms_costs';
-  let dbObj;
-  if(tab===SALES_TAB) dbObj={id:obj.id,item:obj.item,cat:obj.cat,customer:obj.customer,qty:obj.qty,rev:obj.rev,cost:obj.cost,date:obj.date,pay:obj.pay,due:obj.due,ord:obj.ord,disc:obj.disc,notes:obj.notes,batch_ref:obj.batchRef};
-  else dbObj={id:obj.id,item:obj.item,cat:obj.cat,qty:obj.qty,total_cost:obj.totalCost,date:obj.date,notes:obj.notes,type:obj.type,missing_from_box:obj.missingFromBox,refund_received:obj.refundReceived,batch_num:obj.batchNum};
-  const { error } = await supabaseClient.from(table).insert(dbObj);
-  if(error) throw error;
+  await sheetsReq(`/values/${tab}!A:${String.fromCharCode(64+headers.length)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,'POST',{values:[headers.map(h=>obj[h]??'')]});
 }
 async function updateRow(tab,row,headers,obj){
-  const table = tab === SALES_TAB ? 'bms_sales' : 'bms_costs';
-  let dbObj;
-  if(tab===SALES_TAB) dbObj={item:obj.item,cat:obj.cat,customer:obj.customer,qty:obj.qty,rev:obj.rev,cost:obj.cost,date:obj.date,pay:obj.pay,due:obj.due,ord:obj.ord,disc:obj.disc,notes:obj.notes,batch_ref:obj.batchRef};
-  else dbObj={item:obj.item,cat:obj.cat,qty:obj.qty,total_cost:obj.totalCost,date:obj.date,notes:obj.notes,type:obj.type,missing_from_box:obj.missingFromBox,refund_received:obj.refundReceived,batch_num:obj.batchNum};
-  const { error } = await supabaseClient.from(table).update(dbObj).eq('id', obj.id);
-  if(error) throw error;
+  const range=`${tab}!A${row}:${String.fromCharCode(64+headers.length)}${row}`;
+  await sheetsReq(`/values/${range}?valueInputOption=RAW`,'PUT',{range,values:[headers.map(h=>obj[h]??'')]});
 }
-async function deleteById(table, id){
-  const { error } = await supabaseClient.from(table).delete().eq('id', id);
-  if(error) throw error;
+async function deleteRow(rowIndex){
+  await sheetsReq('/:batchUpdate','POST',{requests:[{deleteDimension:{range:{sheetId:0,dimension:'ROWS',startIndex:rowIndex-1,endIndex:rowIndex}}}]});
+}
+async function deleteRowInSheet(sheetName,rowIndex){
+  // Get sheet id for name
+  const meta = await sheetsReq('');
+  const sheet = meta.sheets?.find(s=>s.properties?.title===sheetName);
+  const sheetId = sheet?.properties?.sheetId ?? 0;
+  await sheetsReq('/:batchUpdate','POST',{requests:[{deleteDimension:{range:{sheetId,dimension:'ROWS',startIndex:rowIndex-1,endIndex:rowIndex}}}]});
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1039,7 +970,6 @@ function renderCurrentPage(){
 function renderDashboard(){
   const catFilter=$('dash-cat-filter')?.value||'';
   let baseSales=catFilter?sales.filter(s=>s.cat===catFilter):sales;
-  baseSales=baseSales.filter(s=>s.ord!=='Cancelled');
   const filtered=filterByTime(baseSales);
   const totalRev   =filtered.reduce((a,s)=>a+(+s.rev||0),0);
   const totalProfit=filtered.reduce((a,s)=>a+profit(s),0);
@@ -1050,14 +980,11 @@ function renderDashboard(){
   const catLabel=catFilter?` · ${catFilter}`:'';
   $('dash-period-label').textContent=`Showing: ${pLabel}${catLabel} · ${filtered.length} sales`;
 
-  const totalOrders=filtered.length;
-  const aov=totalOrders?Math.round(totalRev/totalOrders):0;
-  animNum('kpi-rev',totalRev);animNum('kpi-profit',totalProfit);animNum('kpi-cost',totalCost);animNum('kpi-due',totalDue);animNum('kpi-aov',aov);
+  animNum('kpi-rev',totalRev);animNum('kpi-profit',totalProfit);animNum('kpi-cost',totalCost);animNum('kpi-due',totalDue);
   $('kpi-rev-sub').textContent=`${filtered.length} sales`;
   $('kpi-profit-sub').textContent=`${pct(totalProfit,totalRev)} margin`;
   $('kpi-cost-sub').textContent='cost of goods sold';
   $('kpi-due-sub').textContent=`${filtered.filter(s=>s.due>0).length} unpaid orders`;
-  $('kpi-aov-sub').textContent=`revenue ÷ ${totalOrders} orders`;
 
   renderCharts(filtered);
   const recent=[...filtered].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
@@ -1229,7 +1156,7 @@ function onSaleBatchChange(){
   const batch=costsData.find(c=>c.id===batchId);
   if(!batch)return;
   const qty=+$('f-qty')?.value||1;
-  const effQty=Math.max(0,(+batch.qty||1)-(+batch.missingFromBox||0));
+  const effQty=Math.max(1,(+batch.qty||1)-(+batch.missingFromBox||0));
   const effCost=Math.max(0,(+batch.totalCost||0)-(+batch.refundReceived||0));
   const cpu=effQty?Math.round(effCost/effQty):0;
   $('f-cost').value=cpu*qty;
@@ -1281,10 +1208,7 @@ function autoFillSaleCost(){
 }
 async function saveSale(){
   const item=$('f-item').value.trim();if(!item){toast('Item name required','error');return;}
-  let payStatus=$('f-pay-f').value;
-  let dueAmt=+$('f-due').value||0;
-  if(payStatus==='Paid' && dueAmt>0){toast('Cannot mark Paid with Due > 0','error');return;}
-  const entry={id:editId||uid(),item,cat:$('f-catf').value,customer:$('f-cust').value.trim(),qty:+$('f-qty').value||1,date:$('f-date').value,rev:+$('f-rev').value||0,cost:+$('f-cost').value||0,due:dueAmt,disc:+$('f-disc').value||0,pay:payStatus,ord:$('f-ord-f').value,notes:$('f-notes').value.trim(),batchRef:$('f-batchref')?.value||''};
+  const entry={id:editId||uid(),item,cat:$('f-catf').value,customer:$('f-cust').value.trim(),qty:+$('f-qty').value||1,date:$('f-date').value,rev:+$('f-rev').value||0,cost:+$('f-cost').value||0,due:+$('f-due').value||0,disc:+$('f-disc').value||0,pay:$('f-pay-f').value,ord:$('f-ord-f').value,notes:$('f-notes').value.trim(),batchRef:$('f-batchref')?.value||''};
   const btn=$('btn-save-sale');btn.disabled=true;showSync(true);closeModal('m-sale');
   try{
     if(editId){const ex=sales.find(s=>s.id===editId);entry._row=ex._row;await updateRow(SALES_TAB,entry._row,SALE_HEADERS,entry);const i=sales.findIndex(s=>s.id===editId);sales[i]=entry;toast('Sale updated ✦','success');}
@@ -1398,24 +1322,22 @@ async function saveCost(){
 // ══════════════════════════════════════════════════════════
 // DELETE
 // ══════════════════════════════════════════════════════════
-function confirmDel(id,row,type){pendingDeleteId=id;pendingDeleteRow=row;pendingDeleteType=type;resetConfirmInput();openModal('m-confirm');setTimeout(()=>$('confirm-type-input')?.focus(),200);}
-function resetConfirmInput(){const inp=$('confirm-type-input');if(inp)inp.value='';const btn=$('btn-confirm-del');if(btn){btn.disabled=true;btn.style.opacity='.35';btn.style.cursor='not-allowed';}}
-function onConfirmType(){const v=$('confirm-type-input')?.value||'';const ok=v==='CONFIRM';const btn=$('btn-confirm-del');if(btn){btn.disabled=!ok;btn.style.opacity=ok?'1':'.35';btn.style.cursor=ok?'pointer':'not-allowed';}}
+function confirmDel(id,row,type){pendingDeleteId=id;pendingDeleteRow=row;pendingDeleteType=type;openModal('m-confirm');}
 $('btn-confirm-del').onclick=async function(){
-  if(!pendingDeleteId||$('confirm-type-input')?.value!=='CONFIRM')return;resetConfirmInput();closeModal('m-confirm');showSync(true);
+  if(!pendingDeleteId)return;closeModal('m-confirm');showSync(true);
   try{
     if(pendingDeleteType==='sale'){
-      await deleteById('bms_sales', pendingDeleteId);
+      if(pendingDeleteRow>1) await deleteRowInSheet(SALES_TAB,pendingDeleteRow);
       sales=sales.filter(s=>s.id!==pendingDeleteId);
       await fetchSales();toast('Sale deleted','info');
     } else {
-      await deleteById('bms_costs', pendingDeleteId);
+      if(pendingDeleteRow>1) await deleteRowInSheet(COSTS_TAB,pendingDeleteRow);
       costsData=costsData.filter(c=>c.id!==pendingDeleteId);
       await fetchCosts();toast('Shipment deleted','info');
     }
     renderCurrentPage();
   }catch(e){toast('Delete failed: '+e.message,'error');}
-  showSync(false);pendingDeleteId=null;resetConfirmInput();
+  showSync(false);pendingDeleteId=null;
 };
 
 // ══════════════════════════════════════════════════════════
@@ -1424,7 +1346,6 @@ $('btn-confirm-del').onclick=async function(){
 function getCustomers(){
   const map={};
   sales.forEach(s=>{
-    if(s.ord==='Cancelled')return;
     const k=s.customer||'—';
     if(!map[k])map[k]={name:k,orders:0,revenue:0,profit:0,due:0,last:''};
     map[k].orders++;map[k].revenue+=+s.rev||0;map[k].profit+=profit(s);map[k].due+=+s.due||0;
@@ -1481,8 +1402,8 @@ function renderCustomers(selected=null){
         <div class="ltv-value">${fmt(c.revenue)}</div>
       </div>
       <div class="cust-stats">
-        <div><div class="cust-stat-label">Profit</div><div class="cust-stat-val" style="color:${c.profit>=0?'var(--green)':'var(--red)'}">${fmt(c.profit)}</div></div>
-        <div style="text-align:right"><div class="cust-stat-label">Margin</div><div class="cust-stat-val" style="color:${c.profit>=0?'var(--text2)':'var(--red)'}">${pct(c.profit,c.revenue)}</div></div>
+        <div><div class="cust-stat-label">Profit</div><div class="cust-stat-val" style="color:var(--green)">${fmt(c.profit)}</div></div>
+        <div style="text-align:right"><div class="cust-stat-label">Margin</div><div class="cust-stat-val" style="color:var(--text2)">${pct(c.profit,c.revenue)}</div></div>
       </div>
     </div>`).join('')}</div>`;
 }
@@ -1494,7 +1415,7 @@ function getFIFOBatches(cat){
   const purchases=costsData.filter(c=>c.cat===cat&&(c.type||'purchase')==='purchase').sort((a,b)=>a.date.localeCompare(b.date));
   const refunds=costsData.filter(c=>c.cat===cat&&c.type==='refund');
   const missing=costsData.filter(c=>c.cat===cat&&c.type==='missing');
-  const soldQty=sales.filter(s=>s.cat===cat&&s.ord!=='Cancelled').reduce((a,s)=>a+(+s.qty||0),0);
+  const soldQty=sales.filter(s=>s.cat===cat).reduce((a,s)=>a+(+s.qty||0),0);
   const refundedQty=refunds.reduce((a,c)=>a+(+c.qty||0),0);
   const missingQty=missing.reduce((a,c)=>a+(+c.qty||0),0);
   let toDeduct=soldQty+refundedQty+missingQty;
@@ -1563,13 +1484,9 @@ function openInvDetail(cat){
     <div class="table-scroll"><table>
       <thead><tr>
         <th class="no-sort" style="width:28px">#</th>
-        <th class="no-sort" style="min-width:200px">Item / Batch</th>
-        <th class="no-sort" style="min-width:90px">Date</th>
-        <th class="no-sort" style="min-width:70px;text-align:center">Bought</th>
-        <th class="no-sort" style="min-width:60px;text-align:center">Used</th>
-        <th class="no-sort" style="min-width:60px;text-align:center">Left</th>
-        <th class="no-sort" style="min-width:90px">Cost/Unit</th>
-        <th class="no-sort" style="min-width:120px">Notes</th>
+        <th class="no-sort">Item / Batch</th><th class="no-sort">Date</th>
+        <th class="no-sort">Bought</th><th class="no-sort">Used</th><th class="no-sort">Left</th>
+        <th class="no-sort">Cost/Unit</th><th class="no-sort">Notes</th>
       </tr></thead>
       <tbody>${rows}${adjRows}</tbody>
     </table></div>`;
@@ -1581,87 +1498,17 @@ function openInvDetail(cat){
 // ══════════════════════════════════════════════════════════
 function openCatManager(){renderCatManagerList();openModal('m-cats');}
 function renderCatManagerList(){
-  $('cat-list').innerHTML=CATS.map(cat=>{
-    const col=CAT_COLORS[cat]||'#6b7280';
-    const safeCat=cat.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:9px">
-      <button onclick="openColorPicker('${safeCat}',this)" title="Pick colour for ${escH(cat)}"
-        style="width:22px;height:22px;border-radius:50%;background:${col};border:2px solid rgba(255,255,255,.18);cursor:pointer;flex-shrink:0;box-shadow:0 0 8px ${col}66;transition:.2s;padding:0"></button>
-      <span style="flex:1;font-size:13px">${escH(cat)}</span>
-      ${cat==='Other'?'<span style="font-size:10px;color:var(--text3)">required</span>':`<button onclick="removeCat('${safeCat}')" style="padding:3px 8px;border-radius:6px;background:var(--red-dim);border:1px solid rgba(248,113,113,.2);color:var(--red);font-size:11px;cursor:pointer">Remove</button>`}
-    </div>`;
-  }).join('');
+  $('cat-list').innerHTML=CATS.map(c=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:9px">
+      <span style="width:8px;height:8px;border-radius:50%;background:${CAT_COLORS[c]||'var(--text3)'};flex-shrink:0;box-shadow:0 0 6px ${CAT_COLORS[c]||'transparent'}"></span>
+      <span style="flex:1;font-size:13px">${escH(c)}</span>
+      ${c==='Other'?'<span style="font-size:10px;color:var(--text3)">required</span>':`<button onclick="removeCat('${c}')" style="padding:3px 8px;border-radius:6px;background:var(--red-dim);border:1px solid rgba(248,113,113,.2);color:var(--red);font-size:11px;cursor:pointer">Remove</button>`}
+    </div>`).join('');
 }
-function setCatColor(cat,color){
-  CAT_COLORS[cat]=color;
-  saveCatColors();
-  renderCatManagerList();
-  renderCurrentPage();
-}
-
-// ── Custom colour picker logic ──
-let _cpCat=null;
-function hslToHex(h,s,l){
-  s/=100;l/=100;
-  const a=s*Math.min(l,1-l);
-  const f=n=>{const k=(n+h/30)%12;const col=l-a*Math.max(Math.min(k-3,9-k,1),-1);return Math.round(255*col).toString(16).padStart(2,'0');};
-  return '#'+f(0)+f(8)+f(4);
-}
-function hexToHsl(hex){
-  let r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;
-  const max=Math.max(r,g,b),min=Math.min(r,g,b);let h,s,l=(max+min)/2;
-  if(max===min){h=s=0;}else{const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break;}h/=6;}
-  return[Math.round(h*360),Math.round(s*100),Math.round(l*100)];
-}
-function cpUpdate(){
-  const h=+$('color-popover-hue').value,s=+$('color-popover-sat').value,l=+$('color-popover-lit').value;
-  const hex=hslToHex(h,s,l);
-  $('color-popover-hex').value=hex;
-  $('color-popover-preview').style.background=hex;
-  $('color-popover-hue').style.background=`linear-gradient(to right,hsl(${h},0%,${l}%),hsl(${h},100%,${l}%))`;
-}
-function cpHueChange(v){
-  const s=+$('color-popover-sat').value,l=+$('color-popover-lit').value;
-  const hex=hslToHex(+v,s,l);
-  $('color-popover-hex').value=hex;
-  $('color-popover-preview').style.background=hex;
-  $('color-popover-hue').style.background=`linear-gradient(to right,hsl(0,80%,55%),hsl(60,80%,55%),hsl(120,80%,40%),hsl(180,80%,45%),hsl(240,80%,55%),hsl(300,80%,50%),hsl(360,80%,55%))`;
-}
-function cpHexInput(v){
-  if(/^#[0-9a-fA-F]{6}$/.test(v)){
-    const [h,s,l]=hexToHsl(v);
-    $('color-popover-hue').value=h;$('color-popover-sat').value=s;$('color-popover-lit').value=l;
-    $('color-popover-preview').style.background=v;
-  }
-}
-function openColorPicker(cat,btn){
-  _cpCat=cat;
-  const col=CAT_COLORS[cat]||'#6b7280';
-  const [h,s,l]=hexToHsl(col);
-  $('color-popover-label').textContent='Colour for '+cat;
-  $('color-popover-hue').value=h;$('color-popover-sat').value=s;$('color-popover-lit').value=l;
-  $('color-popover-hex').value=col;
-  $('color-popover-preview').style.background=col;
-  const pop=$('color-popover');
-  const rect=btn.getBoundingClientRect();
-  const top=Math.min(rect.bottom+6, window.innerHeight-360);
-  const left=Math.min(rect.left, window.innerWidth-230);
-  pop.style.top=top+'px';pop.style.left=left+'px';
-  pop.classList.add('open');
-  cpHueChange(h);
-}
-function cpConfirm(){
-  if(!_cpCat)return;
-  const hex=$('color-popover-hex').value;
-  if(/^#[0-9a-fA-F]{6}$/.test(hex)){setCatColor(_cpCat,hex);}
-  $('color-popover').classList.remove('open');_cpCat=null;
-}
-function cpCancel(){$('color-popover').classList.remove('open');_cpCat=null;}
 function removeCat(cat){
   if(cat==='Other') return;
   CATS=CATS.filter(c=>c!==cat);
-  lsSet('bms_cats',JSON.stringify(CATS));
-  syncSettingsToDB();
+  localStorage.setItem('bms_cats',JSON.stringify(CATS));
   populateCatSelects();renderCatManagerList();toast(`Removed "${cat}" from new entries`,'info');
 }
 function addCat(){
@@ -1669,8 +1516,7 @@ function addCat(){
   if(!name){toast('Enter a category name','error');return;}
   if(CATS.includes(name)){toast('Already exists','error');return;}
   CATS.push(name);
-  lsSet('bms_cats',JSON.stringify(CATS));
-  syncSettingsToDB();
+  localStorage.setItem('bms_cats',JSON.stringify(CATS));
   populateCatSelects();renderCatManagerList();
   $('new-cat-input').value='';toast(`Added "${name}"` ,'success');
 }
@@ -1682,9 +1528,8 @@ function renderCosts(){
   const purchases=costsData.filter(c=>(c.type||'purchase')==='purchase');
   const refundsAll=costsData.filter(c=>c.type==='refund');
   const missingAll=costsData.filter(c=>c.type==='missing');
-  const totalInvested=purchases.reduce((a,c)=>a+Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0)),0)-refundsAll.reduce((a,c)=>a+(+c.totalCost||0),0);
-  const validSales=sales.filter(s=>s.ord!=='Cancelled');
-  const totalRev=validSales.reduce((a,s)=>a+(+s.rev||0),0);
+  const totalInvested=purchases.reduce((a,c)=>a+(+c.totalCost||0),0)-refundsAll.reduce((a,c)=>a+(+c.totalCost||0),0);
+  const totalRev=sales.reduce((a,s)=>a+(+s.rev||0),0);
   const pnl=totalRev-totalInvested;
 
   $('cost-kpi-total').textContent=fmt(totalInvested);
@@ -1695,8 +1540,7 @@ function renderCosts(){
 
   const typeBadge={purchase:'<span style="background:var(--blue-dim);color:var(--blue);border:1px solid rgba(96,165,250,.2);border-radius:5px;padding:2px 8px;font-size:10px;font-weight:600">Purchase</span>',refund:'<span style="background:var(--green-dim);color:var(--green);border:1px solid rgba(74,222,128,.2);border-radius:5px;padding:2px 8px;font-size:10px;font-weight:600">Refund</span>',missing:'<span style="background:var(--amber-dim);color:var(--amber);border:1px solid rgba(251,191,36,.2);border-radius:5px;padding:2px 8px;font-size:10px;font-weight:600">Missing</span>'};
 
-  const sortedCosts=[...costsData].sort((a,b)=>a.date.localeCompare(b.date));
-  $('costs-table-body').innerHTML=sortedCosts.length?sortedCosts.map((c,i)=>{
+  $('costs-table-body').innerHTML=costsData.length?costsData.map((c,i)=>{
     const t=c.type||'purchase';
     const effQty=Math.max(0,(+c.qty||0)-(+c.missingFromBox||0));
     const effCost=Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0));
@@ -1709,7 +1553,6 @@ function renderCosts(){
     return `<tr style="animation:fadeUp .12s ${i*.025}s both;cursor:context-menu" oncontextmenu="showCtxMenu(event,'cost','${c.id}',${c._row||0})">
       <td class="sl-cell">${i+1}</td>
       <td style="font-weight:500">${escH(c.item)}</td>
-      <td class="num-cell" style="color:var(--blue);text-align:center;font-size:12px">${c.batchNum?`<span style="background:var(--blue-dim);color:var(--blue);border:1px solid rgba(96,165,250,.2);border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700">B${c.batchNum}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
       <td>${typeBadge[t]||''}</td>
       <td><span class="cell-cat" style="color:${CAT_COLORS[c.cat]||'var(--text2)'}">${escH(c.cat)}</span></td>
       <td class="num-cell" style="color:var(--text2);text-align:center">${qtyDisplay}</td>
@@ -1840,11 +1683,10 @@ function exportCSV(){
 }
 
 function exportPDF(){
-  const validSales=sales.filter(s=>s.ord!=='Cancelled');
-  const totalRev=validSales.reduce((a,s)=>a+(+s.rev||0),0);
-  const totalProfit=validSales.reduce((a,s)=>a+profit(s),0);
-  const totalDue=validSales.reduce((a,s)=>a+(+s.due||0),0);
-  const totalInvested=costsData.filter(c=>(c.type||'purchase')==='purchase').reduce((a,c)=>a+Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0)),0) - costsData.filter(c=>c.type==='refund').reduce((a,c)=>a+(+c.totalCost||0),0);
+  const totalRev=sales.reduce((a,s)=>a+(+s.rev||0),0);
+  const totalProfit=sales.reduce((a,s)=>a+profit(s),0);
+  const totalDue=sales.reduce((a,s)=>a+(+s.due||0),0);
+  const totalInvested=costsData.filter(c=>(c.type||'purchase')==='purchase').reduce((a,c)=>a+(+c.totalCost||0),0);
   const fmtN=n=>'৳'+Number(n||0).toLocaleString('en-IN');
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><title>BMS Report</title><style>
@@ -1884,7 +1726,7 @@ function exportPDF(){
     </tr>`).join('')}</tbody></table>
     <h2>Purchase Shipments</h2>
     <table><thead><tr><th>#</th><th>Item</th><th>Type</th><th>Category</th><th>Qty</th><th>Total Cost</th><th>Cost/Unit</th><th>Date</th><th>Notes</th></tr></thead>
-    <tbody>${costsData.map((c,i)=>{const effQty=Math.max(0,(+c.qty||0)-(+c.missingFromBox||0));const effCost=Math.max(0,(+c.totalCost||0)-(+c.refundReceived||0));const cpu=c.type==='missing'?0:(effQty?Math.round(effCost/effQty):0);return`<tr>
+    <tbody>${costsData.map((c,i)=>{const cpu=c.qty&&c.totalCost?Math.round(c.totalCost/c.qty):0;return`<tr>
       <td style="color:#999">${i+1}</td><td><strong>${escH(c.item)}</strong></td><td>${c.type||'purchase'}</td>
       <td>${escH(c.cat)}</td><td>${c.qty}</td><td class="red">${fmtN(c.totalCost)}</td>
       <td>${cpu?fmtN(cpu):'—'}</td><td style="color:#666">${c.date}</td><td>${escH(c.notes)||'—'}</td>
@@ -1899,26 +1741,13 @@ function exportPDF(){
 document.addEventListener('DOMContentLoaded',()=>{
   loadConfig();
   if(!cfg.clientId||!cfg.sheetId){showScreen('setup');}
-  else{populateAuthScreen();showScreen('auth');}
+  else{populateAuthScreen();initTokenClient();showScreen('auth');}
   populateCatSelects();
 });
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-document.addEventListener('click',e=>{
-  const pop=$('color-popover');
-  if(pop&&pop.classList.contains('open')&&!pop.contains(e.target)&&!e.target.closest('[onclick*="openColorPicker"]')){
-    pop.classList.remove('open');_cpCat=null;
-  }
-});
 document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='n'&&currentPage==='sales'){e.preventDefault();openAddSale();}
   if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
-});
-document.addEventListener('click', e => {
-  const sidebar = document.querySelector('aside');
-  const btn = document.getElementById('hamburger-btn');
-  if (sidebar.classList.contains('mobile-open') && !sidebar.contains(e.target) && !btn.contains(e.target)) {
-    sidebar.classList.remove('mobile-open');
-  }
 });
 </script>
 </body>

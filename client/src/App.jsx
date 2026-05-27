@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import BackgroundBlobs from './components/BackgroundBlobs';
 import Spotlight from './components/Spotlight';
 import Footer from './components/Footer';
+import FloatingChat from './components/FloatingChat';
 
 // Customer pages
 import Home from './pages/Home';
@@ -15,6 +16,7 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import AuthPage from './pages/AuthPage';
+import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 
 // Admin pages
@@ -47,6 +49,7 @@ function AnimatedRoutes() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/profile" element={
                     <RequireAuth><Profile /></RequireAuth>
                 } />
@@ -81,6 +84,7 @@ function App() {
                             <div className="pt-20 relative z-10 flex-1">
                                 <AnimatedRoutes />
                             </div>
+                            <FloatingChat />
                             <div className="relative z-20 mt-auto">
                                 <Footer />
                             </div>

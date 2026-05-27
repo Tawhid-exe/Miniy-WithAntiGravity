@@ -92,11 +92,7 @@ function Footer() {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
                                 <MapPin size={18} className="text-purple-500 flex-shrink-0 mt-0.5" />
-                                <span>123 Fashion Street, Suite 100<br />Dhaka, Bangladesh</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                                <Phone size={18} className="text-purple-500 flex-shrink-0" />
-                                <span>+880 1700-000000</span>
+                                <span>Will update later</span>
                             </li>
                             <li className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
                                 <span className="text-green-500 flex-shrink-0"><WhatsAppIcon size={18} /></span>
@@ -104,7 +100,7 @@ function Footer() {
                             </li>
                             <li className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
                                 <Mail size={18} className="text-purple-500 flex-shrink-0" />
-                                <span>support@minivy.com</span>
+                                <span>minivybd@gmail.com</span>
                             </li>
                         </ul>
                     </div>

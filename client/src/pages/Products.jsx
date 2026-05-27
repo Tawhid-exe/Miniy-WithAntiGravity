@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useCart } from '../context/CartContext';
-import { fetchProductsWithStock } from '../services/supabase-api';
-import { ShoppingCart, Sparkles, Search, Filter, X, Tag } from 'lucide-react';
+import { useCustomer } from '../context/CustomerContext';
+import { fetchProductsWithStock, fetchWishlist, addToWishlist, removeFromWishlist } from '../services/supabase-api';
+import { ShoppingCart, Sparkles, Search, Filter, X, Tag, Heart } from 'lucide-react';
 import PageTransition from '../components/PageTransition';
 import { ProductSkeleton } from '../components/Skeleton';
 
@@ -14,6 +15,7 @@ function Products() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const { addToCart } = useCart();
+    const { customer } = useCustomer();
 
     const [allProducts, setAllProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -25,6 +27,7 @@ function Products() {
     const [category, setCategory] = useState(searchParams.get('category') || '');
     const [priceMax, setPriceMax] = useState('');
     const [showInStock, setShowInStock] = useState(false);
+    const [wishlist, setWishlist] = useState(new Set());
 
     useEffect(() => {
         const load = async () => {
@@ -41,6 +44,14 @@ function Products() {
         };
         load();
     }, []);
+
+    useEffect(() => {
+        if (customer?.id) {
+            fetchWishlist(customer.id).then(items => setWishlist(new Set(items))).catch(console.error);
+        } else {
+            setWishlist(new Set());
+        }
+    }, [customer?.id]);
 
     // Dynamic categories from actual product data
     const categories = useMemo(() =>
@@ -68,6 +79,38 @@ function Products() {
         setTimeout(() => {
             setAddedItems(prev => { const s = new Set(prev); s.delete(product.id); return s; });
         }, 1500);
+    };
+
+    const toggleWishlist = async (e, productId) => {
+        e.stopPropagation();
+        if (!customer?.id) {
+            navigate('/auth');
+            return;
+        }
+        
+        const isWished = wishlist.has(productId);
+        // Optimistic UI update
+        setWishlist(prev => {
+            const next = new Set(prev);
+            isWished ? next.delete(productId) : next.add(productId);
+            return next;
+        });
+
+        try {
+            if (isWished) {
+                await removeFromWishlist(customer.id, productId);
+            } else {
+                await addToWishlist(customer.id, productId);
+            }
+        } catch (err) {
+            console.error('Wishlist error:', err);
+            // Revert on error
+            setWishlist(prev => {
+                const next = new Set(prev);
+                isWished ? next.add(productId) : next.delete(productId);
+                return next;
+            });
+        }
     };
 
     const clearFilters = () => {
@@ -213,6 +256,7 @@ function Products() {
                             <AnimatePresence mode="popLayout">
                                 {filtered.map((product, i) => {
                                     const isAdded = addedItems.has(product.id);
+                                    const isWished = wishlist.has(product.id);
                                     return (
                                         <motion.div
                                             key={product.id}
@@ -247,6 +291,14 @@ function Products() {
                                                 <div className="absolute top-3 right-3 bg-white/90 dark:bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-bold text-gray-800 dark:text-white">
                                                     {product.category}
                                                 </div>
+                                                
+                                                {/* Wishlist Button */}
+                                                <button 
+                                                    onClick={(e) => toggleWishlist(e, product.id)}
+                                                    className="absolute bottom-3 right-3 p-2 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-md shadow-lg hover:scale-110 transition-transform"
+                                                >
+                                                    <Heart size={18} className={isWished ? 'fill-red-500 text-red-500' : 'text-gray-700 dark:text-gray-200'} />
+                                                </button>
                                             </div>
 
                                             {/* Info */}
